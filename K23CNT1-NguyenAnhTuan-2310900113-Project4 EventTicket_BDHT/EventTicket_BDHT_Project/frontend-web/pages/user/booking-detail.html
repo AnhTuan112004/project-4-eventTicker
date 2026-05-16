@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Vé - EventTicket</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    
+    <main class="container">
+        <h2 style="margin-bottom: 2rem;">🎫 Chi Tiết Vé</h2>
+        
+        <div id="alert-container"></div>
+        
+        <div id="booking-detail" class="card">
+            <p class="loading">Đang tải chi tiết vé...</p>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button class="btn" onclick="goBack()" style="flex: 1;">← Quay Lại</button>
+            <button class="btn btn-danger" onclick="cancelBooking()" style="flex: 1;">❌ Hủy Vé</button>
+        </div>
+    </main>
+
+    <!-- Load header -->
+    <script>
+        fetch('../../components/header.html')
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('header-placeholder').innerHTML = html;
+            });
+    </script>
+    
+    <script src="../../assets/js/booking-detail.js"></script>
+</body>
+</html>

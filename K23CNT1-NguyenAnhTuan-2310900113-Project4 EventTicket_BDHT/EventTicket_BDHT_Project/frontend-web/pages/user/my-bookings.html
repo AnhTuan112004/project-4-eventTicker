@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vé Của Tôi - EventTicket</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    
+    <main class="container">
+        <h2 style="margin-bottom: 2rem;">📋 Vé Của Tôi</h2>
+        
+        <div id="alert-container"></div>
+        
+        <div id="bookings-container" class="grid">
+            <p class="loading">Đang tải vé của bạn...</p>
+        </div>
+    </main>
+
+    <!-- Load header -->
+    <script>
+        fetch('../../components/header.html')
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('header-placeholder').innerHTML = html;
+            });
+    </script>
+    
+    <script src="../../assets/js/my-bookings.js"></script>
+</body>
+</html>

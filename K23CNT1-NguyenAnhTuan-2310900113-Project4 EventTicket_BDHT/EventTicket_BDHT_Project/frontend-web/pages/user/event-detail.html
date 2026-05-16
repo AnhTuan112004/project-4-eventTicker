@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Sự Kiện - EventTicket</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    
+    <main class="container">
+        <div id="alert-container"></div>
+        
+        <div id="event-detail" class="card">
+            <p class="loading">Đang tải thông tin sự kiện...</p>
+        </div>
+
+        <div id="ticket-types" class="card">
+            <h3>Chọn Loại Vé</h3>
+            <div id="tickets-container">
+                <p class="loading">Đang tải loại vé...</p>
+            </div>
+        </div>
+
+        <div class="card" style="display: flex; gap: 1rem;">
+            <button class="btn" onclick="goBack()">← Quay Lại</button>
+            <button class="btn" onclick="bookTickets()" style="flex: 1;">🛒 Đặt Vé</button>
+        </div>
+    </main>
+
+    <!-- Load header -->
+    <script>
+        fetch('../../components/header.html')
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('header-placeholder').innerHTML = html;
+            });
+    </script>
+    
+    <script src="../../assets/js/core/api-client.js"></script>
+    <script src="../../assets/js/event-detail.js"></script>
+</body>
+</html>
+

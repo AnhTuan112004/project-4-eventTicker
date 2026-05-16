@@ -1,0 +1,42 @@
+<header>
+    <nav class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h1 style="margin:0;"><a href="../../index.html" style="color:white; text-decoration:none;">🎟️ EventTicket</a></h1>
+            <div id="nav-menu">
+                <!-- Will be filled by JavaScript -->
+            </div>
+        </div>
+    </nav>
+</header>
+
+<script>
+// Load header menu based on auth status
+document.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+    const navMenu = document.getElementById('nav-menu');
+    
+    if (token) {
+        // User đã đăng nhập
+        navMenu.innerHTML = `
+            <a href="../../pages/user/my-bookings.html" style="color:white; margin-right:1rem; text-decoration:none;">📋 Vé Của Tôi</a>
+            <span style="color:white; margin-right:1rem;">👤 ${userName || 'User'}</span>
+            <button class="btn" onclick="logout()" style="padding:0.5rem 1rem;">Đăng Xuất</button>
+        `;
+    } else {
+        // User chưa đăng nhập
+        navMenu.innerHTML = `
+            <a href="../../pages/auth/login.html" class="btn" style="margin-right:0.5rem; text-decoration:none;">Đăng Nhập</a>
+            <a href="../../pages/auth/register.html" class="btn" style="background: #764ba2; text-decoration:none;">Đăng Ký</a>
+        `;
+    }
+});
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userName');
+    window.location.href = '../../index.html';
+}
+</script>
+
