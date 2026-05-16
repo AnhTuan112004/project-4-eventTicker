@@ -7,18 +7,23 @@
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-    <header>
-        <!-- Header component will be loaded here -->
-    </header>
+    <header id="header-container">
+        </header>
     
-    <main>
-        <h1>Chào mừng đến với Nền tảng Đặt Vé Sự Kiện</h1>
-        <p>Khám phá các sự kiện hấp dẫn và đặt vé ngay hôm nay!</p>
-        <button onclick="loadEvents()">Xem Sự Kiện</button>
+    <main class="container">
+        <section class="hero" style="text-align: center; margin: 40px 0;">
+            <h1>Chào mừng đến với Nền tảng Đặt Vé Sự Kiện</h1>
+            <p>Khám phá các sự kiện hấp dẫn và đặt vé ngay hôm nay!</p>
+            <button class="btn btn-primary" onclick="loadEvents()" style="margin-top: 15px;">Xem Sự Kiện</button>
+        </section>
+
+        <section class="event-list">
+            <div id="events-container" class="events-grid">
+                </div>
+        </section>
     </main>
     
     <script src="assets/js/core/api-client.js"></script>
     <script src="assets/js/home.js"></script>
 </body>
 </html>
-
