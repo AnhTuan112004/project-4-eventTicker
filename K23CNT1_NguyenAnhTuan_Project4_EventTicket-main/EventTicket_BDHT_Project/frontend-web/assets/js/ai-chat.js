@@ -78,7 +78,7 @@ async function initAiChat() {
                 sessionCode,
                 message
             });
-            const aiText = response.aiResponse?.message || response.aiResponse?.content || response.aiResponse?.response || 'AI chưa trả lời.';
+            const aiText = response.aiResponse?.messageText || response.aiResponse?.message || response.aiResponse?.content || response.aiResponse?.response || 'AI chưa trả lời.';
             appendChatMessage('AI', aiText, 'ai');
         } catch (error) {
             appendChatMessage('AI', `Có lỗi: ${error.message}`, 'ai');

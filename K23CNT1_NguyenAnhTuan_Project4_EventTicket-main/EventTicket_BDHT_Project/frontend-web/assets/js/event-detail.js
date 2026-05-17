@@ -64,19 +64,19 @@ async function loadEventDetails() {
         loadingMsg.style.display = 'none';
         eventContent.style.display = 'flex';
 
-        document.getElementById('detail-title').innerText = event.name || event.eventName || 'Sự kiện không tên';
-        document.getElementById('detail-venue').innerText = event.venue || event.venueName || event.location || 'Chưa cập nhật';
+        document.getElementById('detail-title').innerText = event.title || event.name || event.eventName || 'Sự kiện không tên';
+        document.getElementById('detail-venue').innerText = (event.venue && event.venue.venueName) ? event.venue.venueName : (event.venueName || event.location || 'Chưa cập nhật');
         document.getElementById('detail-desc').innerText = event.description || event.desc || 'Chưa có thông tin mô tả chi tiết.';
-        const rawDate = event.date || event.startTime;
+        const rawDate = event.startTime || event.date;
         if (rawDate) {
             const d = new Date(rawDate);
             document.getElementById('detail-date').innerText = d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
         }
-        const imgUrl = event.imageUrl || 'https://via.placeholder.com/800x450?text=Sự+kiện';
+        const imgUrl = event.bannerImageUrl || event.imageUrl || 'https://via.placeholder.com/800x450?text=Sự+kiện';
         document.getElementById('detail-image').src = imgUrl;
 
         const price = event.price || event.minPrice || 0;
-        document.getElementById('detail-price').innerText = price.toLocaleString('vi-VN') + ' VNĐ';
+        document.getElementById('detail-price').innerText = price ? (price.toLocaleString('vi-VN') + ' VNĐ') : 'Liên hệ';
 
         if (ticketTypesContainer) {
             const ticketTypes = await window.apiClient.get(`/api/nat/public/ticket-types/${eventId}`);
@@ -99,7 +99,7 @@ function renderTicketTypes(ticketTypes, container) {
     container.innerHTML = ticketTypes.map(type => {
         const name = type.typeName || type.name || 'Vé chung';
         const price = type.price ? Number(type.price).toLocaleString('vi-VN') + ' VNĐ' : 'Liên hệ';
-        const remaining = type.remainingQuantity ?? type.totalQuantity ?? 0;
+        const remaining = (type.totalQuantity || 0) - (type.soldQuantity || 0);
         return `
             <label class="ticket-type-option" style="display:block; border:1px solid #ddd; padding: 12px; border-radius: 8px; margin-bottom: 12px; cursor:pointer;">
                 <input type="radio" name="ticketType" value="${type.ticketTypeId}" style="margin-right: 10px;" ${type === ticketTypes[0] ? 'checked' : ''}>

@@ -103,7 +103,7 @@ async function loadCart() {
         cartDetails.style.display = 'block';
 
         const totalAmount = order.totalAmount || items.reduce((sum, item) => {
-            const price = item.price || item.unitPrice || 0;
+            const price = item.priceAtTime || item.price || item.unitPrice || 0;
             return sum + Number(price) * Number(item.quantity || 0);
         }, 0);
 
@@ -115,13 +115,13 @@ async function loadCart() {
         cartTotal.innerText = `Tổng giá: ${Number(totalAmount).toLocaleString('vi-VN')} VNĐ`;
 
         cartItems.innerHTML = items.map(item => {
-            const label = item.ticketTypeName || item.typeName || item.name || 'Vé sự kiện';
-            const unitPrice = item.price || item.unitPrice || 0;
+            const label = (item.ticketType && item.ticketType.typeName) || item.ticketTypeName || item.typeName || item.name || 'Vé sự kiện';
+            const unitPrice = item.priceAtTime || item.price || item.unitPrice || 0;
             const quantity = item.quantity || 1;
             const amount = Number(unitPrice) * Number(quantity);
             return `
                 <tr>
-                    <td>${item.ticketId || item.id || '---'}</td>
+                    <td>${item.orderItemId || item.ticketId || item.id || '---'}</td>
                     <td>${label}</td>
                     <td><input type="number" min="1" value="${quantity}" data-item-id="${item.orderItemId || item.id || item.orderItem?.orderItemId}" class="cart-qty" style="width:70px; padding:6px; border-radius:4px; border:1px solid #ccc;"/></td>
                     <td>${Number(unitPrice).toLocaleString('vi-VN')} VNĐ</td>

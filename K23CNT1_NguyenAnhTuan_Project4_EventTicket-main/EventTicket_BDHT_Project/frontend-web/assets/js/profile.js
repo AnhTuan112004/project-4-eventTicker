@@ -159,7 +159,7 @@ async function loadOrders() {
         container.innerHTML = orders.map(order => {
             const status = order.status || order.orderStatus || 'PENDING';
             const createdAt = order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : 'Không rõ';
-            const total = order.totalAmount ? Number(order.totalAmount).toLocaleString('vi-VN') + ' VNĐ' : 'Chưa rõ';
+            const total = order.finalAmount ? Number(order.finalAmount).toLocaleString('vi-VN') + ' VNĐ' : (order.totalAmount ? Number(order.totalAmount).toLocaleString('vi-VN') + ' VNĐ' : 'Chưa rõ');
             return `
                 <div class="order-item">
                     <strong>Đơn hàng #${order.orderId || order.id || '---'}</strong>
@@ -187,15 +187,15 @@ async function loadTickets() {
         }
 
         container.innerHTML = tickets.map(ticket => {
-            const code = ticket.ticketCode || ticket.qrCode || '---';
-            const eventName = ticket.eventName || ticket.event?.name || 'Sự kiện chưa xác định';
-            const purchasedAt = ticket.purchaseDate ? new Date(ticket.purchaseDate).toLocaleString('vi-VN') : 'Không rõ';
-            const seat = ticket.seatNumber || ticket.seat || 'Chưa rõ';
+            const code = ticket.qrCode || ticket.ticketCode || '---';
+            const eventName = (ticket.ticketType && ticket.ticketType.event && ticket.ticketType.event.title) || ticket.eventName || 'Sự kiện chưa xác định';
+            const purchasedAt = ticket.createdAt ? new Date(ticket.createdAt).toLocaleString('vi-VN') : 'Không rõ';
+            const seat = (ticket.ticketType && ticket.ticketType.typeName) || ticket.seatNumber || 'Chưa rõ';
             return `
                 <div class="order-item">
                     <strong>Sự kiện: ${eventName}</strong>
                     <p>Mã vé: ${code}</p>
-                    <p>Vị trí/ghế: ${seat}</p>
+                    <p>Hạng vé: ${seat}</p>
                     <p>Ngày mua: ${purchasedAt}</p>
                 </div>
             `;

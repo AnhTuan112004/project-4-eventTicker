@@ -93,9 +93,9 @@ function displayEvents(events, container) {
     }
 
     container.innerHTML = events.map(event => {
-        const title = event.name || event.eventName || 'Chưa cập nhật tên';
-        const venue = event.venue || event.venueName || event.location || 'Chưa cập nhật';
-        const eventId = event.id || event.eventId;
+        const title = event.title || event.name || event.eventName || 'Chưa cập nhật tên';
+        const venue = (event.venue && event.venue.venueName) ? event.venue.venueName : (event.venueName || event.location || 'Chưa cập nhật');
+        const eventId = event.eventId || event.id;
         
         let formattedPrice = 'Liên hệ';
         const price = event.minPrice || event.price;
@@ -103,7 +103,7 @@ function displayEvents(events, container) {
             formattedPrice = new Intl.NumberFormat('vi-VN').format(price);
         }
         
-        const imgUrl = event.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&auto=format&fit=crop';
+        const imgUrl = event.bannerImageUrl || event.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&auto=format&fit=crop';
 
         return `
             <a href="/pages/user/event-detail.html?id=${eventId}" class="event-card">
