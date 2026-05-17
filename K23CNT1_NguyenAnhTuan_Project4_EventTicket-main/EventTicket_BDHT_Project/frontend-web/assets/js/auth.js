@@ -1,52 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-    loadHeaderForAuth();
+    window.pageUtils.loadHeader();
     setupLogin();
     setupRegister();
     setupExtendFeatures();
 });
-
-// ==========================================
-// 0. LOAD HEADER CHO TRANG AUTH
-// ==========================================
-async function loadHeaderForAuth() {
-    try {
-        const response = await fetch('/components/header.html');
-        let headerHTML = await response.text();
-        
-        headerHTML = headerHTML.replace(/href="index.html"/g, 'href="/index.html"');
-        headerHTML = headerHTML.replace(/href="pages\/user\//g, 'href="/pages/user/');
-        
-        const headerContainer = document.getElementById('header-container');
-        if (headerContainer) {
-            headerContainer.innerHTML = headerHTML;
-        }
-        
-        const token = window.apiClient.getToken();
-        const storedUser = localStorage.getItem('currentUser');
-        const isLoggedIn = token || storedUser;
-        const guestMenu = document.getElementById('guest-menu');
-        const userMenu = document.getElementById('user-menu');
-        const btnLogout = document.getElementById('btn-logout');
-
-        if (isLoggedIn) {
-            if (guestMenu) guestMenu.style.display = 'none';
-            if (userMenu) userMenu.style.display = 'flex';
-            if (btnLogout) {
-                btnLogout.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    window.apiClient.clearToken();
-                    localStorage.removeItem('currentUser');
-                    window.location.href = '/index.html';
-                });
-            }
-        } else {
-            if (guestMenu) guestMenu.style.display = 'flex';
-            if (userMenu) userMenu.style.display = 'none';
-        }
-    } catch (error) {
-        console.error('Lỗi load header:', error);
-    }
-}
 
 // ==========================================
 // 1. XỬ LÝ ĐĂNG NHẬP
@@ -167,19 +124,19 @@ function setupExtendFeatures() {
             }
 
             try {
-                await window.apiClient.post('/nat/public/auth/forgot-password', { email: email });
+                await window.apiClient.post('/api/nat/public/auth/forgot-password', { email: email });
                 const otp = prompt(`Mã OTP đã được gửi đến ${email}.\nVui lòng nhập mã OTP vào đây:`);
                 if (!otp) {
                     alert('Bạn đã hủy thao tác nhập OTP.');
                     return;
                 }
-                await window.apiClient.post('/nat/public/auth/verify-otp', { email: email, otp: otp });
+                await window.apiClient.post('/api/nat/public/auth/verify-otp', { email: email, otp: otp });
                 const newPassword = prompt('Xác thực OTP thành công!\nVui lòng nhập mật khẩu mới:');
                 if (!newPassword) {
                     alert('Bạn đã hủy thao tác đặt lại mật khẩu.');
                     return;
                 }
-                await window.apiClient.post('/nat/public/auth/reset-password', { email: email, newPassword: newPassword });
+                await window.apiClient.post('/api/nat/public/auth/reset-password', { email: email, newPassword: newPassword });
                 alert('Đổi mật khẩu thành công! Bây giờ bạn có thể đăng nhập bằng mật khẩu mới.');
             } catch (error) {
                 alert('Lỗi: ' + (error.message || 'Đã xảy ra sự cố.'));

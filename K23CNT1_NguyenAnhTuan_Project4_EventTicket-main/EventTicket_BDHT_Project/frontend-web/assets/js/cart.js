@@ -1,42 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    loadHeader();
+    window.pageUtils.loadHeader();
     bindCartActions();
     loadCart();
 });
-
-async function loadHeader() {
-    try {
-        const response = await fetch('/components/header.html');
-        let headerHTML = await response.text();
-        headerHTML = headerHTML.replace(/href="index.html"/g, 'href="/index.html"');
-        headerHTML = headerHTML.replace(/href="pages\/user\//g, 'href="/pages/user/');
-        document.getElementById('header-container').innerHTML = headerHTML;
-
-        const token = window.apiClient.getToken();
-        const storedUser = localStorage.getItem('currentUser');
-        const isLoggedIn = token || storedUser;
-        const guestMenu = document.getElementById('guest-menu');
-        const userMenu = document.getElementById('user-menu');
-        const btnLogout = document.getElementById('btn-logout');
-        if (isLoggedIn) {
-            if (guestMenu) guestMenu.style.display = 'none';
-            if (userMenu) userMenu.style.display = 'flex';
-            if (btnLogout) {
-                btnLogout.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    window.apiClient.clearToken();
-                    localStorage.removeItem('currentUser');
-                    window.location.href = '/index.html';
-                });
-            }
-        } else {
-            if (guestMenu) guestMenu.style.display = 'flex';
-            if (userMenu) userMenu.style.display = 'none';
-        }
-    } catch (error) {
-        console.error('Lỗi load header:', error);
-    }
-}
 
 function bindCartActions() {
     const refreshBtn = document.getElementById('btn-refresh');

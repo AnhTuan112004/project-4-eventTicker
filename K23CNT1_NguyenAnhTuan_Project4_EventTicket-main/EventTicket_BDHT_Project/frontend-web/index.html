@@ -19,11 +19,26 @@
 
         <!-- Events Section -->
         <section class="container">
-            <h2 class="section-title">Sự kiện nổi bật</h2>
-            
+            <div class="home-search-panel">
+                <div>
+                    <h2 class="section-title">Sự kiện nổi bật</h2>
+                    <p class="section-subtitle">Khám phá sự kiện theo danh mục hoặc tìm kiếm nhanh.</p>
+                </div>
+                <div class="search-row">
+                    <input type="text" id="event-search-keyword" placeholder="Tìm kiếm sự kiện theo tên hoặc nghệ sĩ" />
+                    <button id="btn-search-events">Tìm kiếm</button>
+                </div>
+            </div>
+
+            <div id="category-filters" class="category-filters"></div>
             <div id="event-list" class="event-grid">
                 <!-- Events will be loaded here via JS -->
             </div>
+        </section>
+
+        <section class="container">
+            <h2 class="section-title">Sự kiện mới nhất</h2>
+            <div id="latest-event-list" class="event-grid"></div>
         </section>
     </main>
 
@@ -96,6 +111,13 @@
         .chat-panel-popup .chat-input-row { display: flex; gap: 8px; }
         .chat-panel-popup .chat-input-row input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc; outline: none; }
         .chat-panel-popup .chat-input-row button { padding: 10px 15px; border: none; border-radius: 6px; background: #28a745; color: #fff; cursor: pointer; font-weight: bold; }
+        .home-search-panel { display:flex; flex-wrap:wrap; justify-content:space-between; gap:16px; align-items:flex-end; margin: 36px 0 16px; }
+        .home-search-panel .search-row { display:flex; gap:12px; flex:1; min-width:260px; }
+        .home-search-panel input { flex:1; padding: 12px 14px; border-radius: 8px; border:1px solid #ccc; }
+        .home-search-panel button { padding: 12px 22px; border:none; border-radius:8px; background:#007bff; color:white; cursor:pointer; }
+        .category-filters { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
+        .category-chip { padding: 8px 14px; border-radius: 999px; background:#f1f1f1; border:1px solid #ddd; cursor:pointer; transition: all .2s ease; }
+        .category-chip.active, .category-chip:hover { background:#007bff; color:#fff; border-color:#007bff; }
     </style>
 
     <script>

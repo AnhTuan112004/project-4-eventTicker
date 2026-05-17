@@ -1,45 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    loadHeaderForDetail();
+    window.pageUtils.loadHeader();
     loadEventDetails();
     setupBookingForm();
 });
-
-// ==========================================
-// 1. LOAD HEADER
-// ==========================================
-async function loadHeaderForDetail() {
-    try {
-        const response = await fetch('/components/header.html');
-        let headerHTML = await response.text();
-        headerHTML = headerHTML.replace(/href="index.html"/g, 'href="/index.html"');
-        headerHTML = headerHTML.replace(/href="pages\/user\//g, 'href="/pages/user/');
-        document.getElementById('header-container').innerHTML = headerHTML;
-
-        const storedUser = localStorage.getItem('currentUser');
-        const isLoggedIn = Boolean(storedUser);
-        const guestMenu = document.getElementById('guest-menu');
-        const userMenu = document.getElementById('user-menu');
-        const btnLogout = document.getElementById('btn-logout');
-
-        if (isLoggedIn) {
-            if (guestMenu) guestMenu.style.display = 'none';
-            if (userMenu) userMenu.style.display = 'flex';
-            if (btnLogout) {
-                btnLogout.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    window.apiClient.clearToken();
-                    localStorage.removeItem('currentUser');
-                    window.location.reload();
-                });
-            }
-        } else {
-            if (guestMenu) guestMenu.style.display = 'flex';
-            if (userMenu) userMenu.style.display = 'none';
-        }
-    } catch (error) {
-        console.error('Lỗi load header:', error);
-    }
-}
 
 // ==========================================
 // 2. LẤY CHI TIẾT SỰ KIỆN VÀ LOẠI VÉ
@@ -51,6 +14,8 @@ async function loadEventDetails() {
     const errorMsg = document.getElementById('error-msg');
     const eventContent = document.getElementById('event-content');
     const ticketTypesContainer = document.getElementById('ticket-types');
+    const eventImagesContainer = document.getElementById('detail-images');
+    const venueInfo = document.getElementById('detail-venue-info');
 
     if (!eventId) {
         loadingMsg.style.display = 'none';
@@ -78,9 +43,23 @@ async function loadEventDetails() {
         const price = event.price || event.minPrice || 0;
         document.getElementById('detail-price').innerText = price ? (price.toLocaleString('vi-VN') + ' VNĐ') : 'Liên hệ';
 
-        if (ticketTypesContainer) {
-            const ticketTypes = await window.apiClient.get(`/api/nat/public/ticket-types/${eventId}`);
-            renderTicketTypes(ticketTypes, ticketTypesContainer);
+        if (venueInfo) {
+            venueInfo.innerHTML = renderVenueInfo(event.venue || {
+                venueName: event.venueName || 'Chưa cập nhật',
+                address: event.address || '',
+                city: event.city || ''
+            });
+        }
+
+        const ticketApi = window.apiClient.getToken() ?
+            `/api/nat/member/ticket-types/${eventId}/available` :
+            `/api/nat/public/ticket-types/${eventId}`;
+        const ticketTypes = await window.apiClient.get(ticketApi);
+        if (ticketTypesContainer) renderTicketTypes(ticketTypes, ticketTypesContainer);
+
+        if (eventImagesContainer) {
+            const images = await loadEventImages(eventId);
+            renderEventImages(images, eventImagesContainer, imgUrl);
         }
     } catch (error) {
         console.error('Lỗi lấy chi tiết sự kiện:', error);
@@ -90,19 +69,56 @@ async function loadEventDetails() {
     }
 }
 
+async function loadEventImages(eventId) {
+    try {
+        const images = await window.apiClient.get(`/api/nat/public/events/${eventId}/images`);
+        return Array.isArray(images) && images.length > 0 ? images : [];
+    } catch (error) {
+        console.warn('Không lấy được ảnh sự kiện:', error);
+        return [];
+    }
+}
+
+function renderEventImages(images, container, fallbackImage) {
+    if (!container) return;
+    if (!images || images.length === 0) {
+        container.innerHTML = `<img src="${fallbackImage}" alt="Event Image" style="width:100%; border-radius:8px; margin-bottom:18px; object-fit:cover; max-height:420px;">`;
+        return;
+    }
+
+    container.innerHTML = images.map(image => {
+        const src = image.imageUrl || image.url || fallbackImage;
+        return `<img src="${src}" alt="Event Image" style="width:100%; border-radius:8px; margin-bottom:18px; object-fit:cover; max-height:320px;">`;
+    }).join('');
+}
+
+function renderVenueInfo(venue) {
+    const name = venue.venueName || venue.name || 'Chưa cập nhật';
+    const address = venue.address || venue.addressLine || 'Địa chỉ chưa rõ';
+    const city = venue.city || venue.cityName || '';
+
+    return `
+        <div style="margin-bottom: 18px; padding: 14px; background: #ffffff; border-radius: 8px; border: 1px solid #ddd;">
+            <h4 style="margin: 0 0 8px;">Thông tin địa điểm</h4>
+            <p style="margin: 0 0 5px;"><strong>${name}</strong></p>
+            <p style="margin: 0; color: #555;">${address}${city ? ', ' + city : ''}</p>
+        </div>
+    `;
+}
+
 function renderTicketTypes(ticketTypes, container) {
     if (!ticketTypes || ticketTypes.length === 0) {
         container.innerHTML = '<p>Không có loại vé nào đang mở bán.</p>';
         return;
     }
 
-    container.innerHTML = ticketTypes.map(type => {
+    container.innerHTML = ticketTypes.map((type, index) => {
         const name = type.typeName || type.name || 'Vé chung';
         const price = type.price ? Number(type.price).toLocaleString('vi-VN') + ' VNĐ' : 'Liên hệ';
         const remaining = (type.totalQuantity || 0) - (type.soldQuantity || 0);
         return `
             <label class="ticket-type-option" style="display:block; border:1px solid #ddd; padding: 12px; border-radius: 8px; margin-bottom: 12px; cursor:pointer;">
-                <input type="radio" name="ticketType" value="${type.ticketTypeId}" style="margin-right: 10px;" ${type === ticketTypes[0] ? 'checked' : ''}>
+                <input type="radio" name="ticketType" value="${type.ticketTypeId}" style="margin-right: 10px;" ${index === 0 ? 'checked' : ''}>
                 <strong>${name}</strong> — ${price} — Còn lại: ${remaining}
             </label>
         `;
@@ -119,7 +135,7 @@ function setupBookingForm() {
     bookingForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const msgBox = document.getElementById('booking-msg');
-        const token = window.apiClient.getToken();
+        const token = window.apiClient ? window.apiClient.getToken() : null;
         const storedUser = localStorage.getItem('currentUser');
         const isLoggedIn = token || storedUser;
         const urlParams = new URLSearchParams(window.location.search);
@@ -133,7 +149,8 @@ function setupBookingForm() {
             return;
         }
 
-        const qty = Number(document.getElementById('ticket-qty').value || 1);
+        const qtyInput = document.getElementById('ticket-qty');
+        const qty = Number(qtyInput ? qtyInput.value : 1) || 1;
         const selectedTicketType = document.querySelector('input[name="ticketType"]:checked');
         if (!selectedTicketType) {
             msgBox.innerHTML = '<span style="color: red;">Vui lòng chọn loại vé.</span>';
@@ -146,7 +163,7 @@ function setupBookingForm() {
         try {
             const orderId = await getOrCreateOrder();
             await window.apiClient.post(`/api/nat/member/orders/${orderId}/items`, {
-                ticketTypeId: ticketTypeId,
+                ticketTypeId,
                 quantity: qty
             });
             msgBox.innerHTML = `<span style="color: green;">Đã thêm ${qty} vé vào giỏ hàng. <a href='/pages/user/profile.html' style='color:#007bff;'>Xem giỏ hàng</a></span>`;

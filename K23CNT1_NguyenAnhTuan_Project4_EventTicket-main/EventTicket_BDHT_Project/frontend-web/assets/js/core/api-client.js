@@ -102,3 +102,59 @@ class ApiClient {
 
 // Khởi tạo biến toàn cục để xài ở mọi file HTML
 window.apiClient = new ApiClient();
+
+window.pageUtils = {
+    async loadHeader() {
+        try {
+            const response = await fetch('/components/header.html');
+            let headerHTML = await response.text();
+            headerHTML = headerHTML.replace(/href="index.html"/g, 'href="/index.html"');
+            headerHTML = headerHTML.replace(/href="pages\/user\//g, 'href="/pages/user/');
+            const headerContainer = document.getElementById('header-container');
+            if (headerContainer) {
+                headerContainer.innerHTML = headerHTML;
+                this.setupAuthMenu();
+            }
+        } catch (error) {
+            console.error('Lỗi khi load header:', error);
+        }
+    },
+
+    async loadFooter() {
+        try {
+            const response = await fetch('/components/footer.html');
+            const footerHTML = await response.text();
+            const footerContainer = document.getElementById('footer-container');
+            if (footerContainer) {
+                footerContainer.innerHTML = footerHTML;
+            }
+        } catch (error) {
+            console.error('Lỗi khi load footer:', error);
+        }
+    },
+
+    setupAuthMenu() {
+        const token = window.apiClient ? window.apiClient.getToken() : null;
+        const storedUser = localStorage.getItem('currentUser');
+        const isLoggedIn = token || storedUser;
+
+        const guestMenu = document.getElementById('guest-menu');
+        const userMenu = document.getElementById('user-menu');
+        const btnLogout = document.getElementById('btn-logout');
+
+        if (isLoggedIn) {
+            if (guestMenu) guestMenu.style.display = 'none';
+            if (userMenu) userMenu.style.display = 'flex';
+            if (btnLogout) {
+                btnLogout.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.apiClient.clearToken();
+                    window.location.href = '/index.html';
+                });
+            }
+        } else {
+            if (guestMenu) guestMenu.style.display = 'flex';
+            if (userMenu) userMenu.style.display = 'none';
+        }
+    }
+};
