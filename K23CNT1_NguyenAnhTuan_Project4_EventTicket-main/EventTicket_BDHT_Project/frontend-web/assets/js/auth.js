@@ -67,7 +67,7 @@ function setupLogin() {
         errorMsg.innerHTML = '<span style="color: blue;">Đang kiểm tra thông tin xác thực...</span>';
 
         try {
-            const response = await window.apiClient.post('/api/vtd/public/auth/login', {
+            const response = await window.apiClient.post('/api/nat/public/auth/login', {
                 email: emailInput.value,
                 password: passwordInput.value
             });
@@ -135,7 +135,7 @@ function setupRegister() {
         msgBox.innerHTML = '<span style="color: blue;">Đang tạo tài khoản...</span>';
 
         try {
-            const response = await window.apiClient.post('/api/vtd/public/auth/register', {
+            const response = await window.apiClient.post('/api/nat/public/auth/register', {
                 fullName: fullName,
                 email: email,
                 phoneNumber: phoneNumber,
@@ -167,19 +167,19 @@ function setupExtendFeatures() {
             }
 
             try {
-                await window.apiClient.post('/vtd/public/auth/forgot-password', { email: email });
+                await window.apiClient.post('/nat/public/auth/forgot-password', { email: email });
                 const otp = prompt(`Mã OTP đã được gửi đến ${email}.\nVui lòng nhập mã OTP vào đây:`);
                 if (!otp) {
                     alert('Bạn đã hủy thao tác nhập OTP.');
                     return;
                 }
-                await window.apiClient.post('/vtd/public/auth/verify-otp', { email: email, otp: otp });
+                await window.apiClient.post('/nat/public/auth/verify-otp', { email: email, otp: otp });
                 const newPassword = prompt('Xác thực OTP thành công!\nVui lòng nhập mật khẩu mới:');
                 if (!newPassword) {
                     alert('Bạn đã hủy thao tác đặt lại mật khẩu.');
                     return;
                 }
-                await window.apiClient.post('/vtd/public/auth/reset-password', { email: email, newPassword: newPassword });
+                await window.apiClient.post('/nat/public/auth/reset-password', { email: email, newPassword: newPassword });
                 alert('Đổi mật khẩu thành công! Bây giờ bạn có thể đăng nhập bằng mật khẩu mới.');
             } catch (error) {
                 alert('Lỗi: ' + (error.message || 'Đã xảy ra sự cố.'));

@@ -3,56 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Chủ - Đặt Vé Sự Kiện</title>
+    <title>TicketGo - Đi chơi đâu, lên Ticketgo</title>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <style>
-        /* CSS cơ bản để dàn trang dạng Grid (Lưới) cho các sự kiện */
-        .event-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .event-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        .btn-buy {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 8px 15px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-        .btn-buy:hover { background-color: #0056b3; }
-        .hero { text-align: center; padding: 40px 20px; background-color: #f8f9fa; }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
     <div id="header-container"></div>
 
     <main>
-        <section class="hero">
-            <h1>Chào mừng đến với Nền tảng Đặt Vé Sự Kiện</h1>
-            <p>Khám phá các sự kiện hấp dẫn và đặt vé ngay hôm nay!</p>
+        <!-- Banner Section -->
+        <section class="banner">
+            <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=1200&auto=format&fit=crop" alt="Event Banner">
         </section>
 
-        <section>
-            <h2 style="text-align: center; margin-top: 30px;">Sự kiện sắp diễn ra</h2>
+        <!-- Events Section -->
+        <section class="container">
+            <h2 class="section-title">Sự kiện nổi bật</h2>
             
             <div id="event-list" class="event-grid">
-                </div>
+                <!-- Events will be loaded here via JS -->
+            </div>
         </section>
     </main>
 
+    <div id="footer-container"></div>
+    
+    <!-- Chat Widget Placeholder -->
+    <div class="chat-widget">
+        <i class="far fa-comment-dots"></i>
+    </div>
+
+    <!-- Scripts -->
     <script src="/assets/js/core/api-client.js"></script>
     <script src="/assets/js/home.js"></script>
 </body>

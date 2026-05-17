@@ -52,7 +52,7 @@ function bindPromotionActions() {
             resultBox.style.color = 'blue';
             resultBox.innerText = 'Đang kiểm tra mã...';
             try {
-                const response = await window.apiClient.post('/api/vtd/public/promotions/validate', { code });
+                const response = await window.apiClient.post('/api/nat/public/promotions/validate', { code });
                 if (response.success) {
                     resultBox.style.color = 'green';
                     resultBox.innerHTML = `Mã hợp lệ! Loại giảm giá: ${response.discountType}, giá trị: ${response.discountValue}.`;
@@ -79,7 +79,7 @@ function bindPromotionActions() {
             resultBox.style.color = 'blue';
             resultBox.innerText = 'Đang tính giảm giá...';
             try {
-                const result = await window.apiClient.post('/api/vtd/public/promotions/calculate-discount', {
+                const result = await window.apiClient.post('/api/nat/public/promotions/calculate-discount', {
                     promotionCode: code,
                     originalPrice: price
                 });

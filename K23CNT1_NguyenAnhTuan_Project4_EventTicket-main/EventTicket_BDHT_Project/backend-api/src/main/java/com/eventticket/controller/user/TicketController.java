@@ -45,7 +45,7 @@ public class TicketController {
     /**
      * GUEST: Xem danh sách loại vé của sự kiện
      */
-    @GetMapping("/api/vtd/public/ticket-types/{eventId}")
+    @GetMapping("/api/nat/public/ticket-types/{eventId}")
     public ResponseEntity<List<G8_ticketType>> getActiveTicketTypes(@PathVariable Integer eventId) {
         List<G8_ticketType> ticketTypes = ticketTypeService.getActiveTicketTypesByEvent(eventId);
         return ResponseEntity.ok(ticketTypes);
@@ -54,7 +54,7 @@ public class TicketController {
     /**
      * MEMBER: Xem các loại vé còn hàng
      */
-    @GetMapping("/api/vtd/member/ticket-types/{eventId}/available")
+    @GetMapping("/api/nat/member/ticket-types/{eventId}/available")
     public ResponseEntity<List<G8_ticketType>> getAvailableTicketTypes(@PathVariable Integer eventId) {
         List<G8_ticketType> ticketTypes = ticketTypeService.getAvailableTicketsByEvent(eventId);
         return ResponseEntity.ok(ticketTypes);
@@ -63,7 +63,7 @@ public class TicketController {
     /**
      * MEMBER: Xem kho vé điện tử (danh sách vé đã mua)
      */
-    @GetMapping("/api/vtd/member/my-tickets")
+    @GetMapping("/api/nat/member/my-tickets")
     public ResponseEntity<List<G8_ticket>> getUserTickets() {
         Integer userId = getCurrentUserId();
         if (userId == null) {
@@ -76,7 +76,7 @@ public class TicketController {
     /**
      * MEMBER: Xem QR code của vé
      */
-    @GetMapping("/api/vtd/member/tickets/{ticketId}")
+    @GetMapping("/api/nat/member/tickets/{ticketId}")
     public ResponseEntity<G8_ticket> getTicketQrCode(@PathVariable Integer ticketId) {
         G8_ticket ticket = ticketService.getTicketQrCode(ticketId);
         return ResponseEntity.ok(ticket);

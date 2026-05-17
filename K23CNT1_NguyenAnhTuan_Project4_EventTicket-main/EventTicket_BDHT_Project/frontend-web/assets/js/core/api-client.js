@@ -14,9 +14,10 @@ class ApiClient {
         localStorage.setItem('token', token);
     }
 
-    // Xóa token (đăng xuất)
+    // Xóa token và thông tin user (đăng xuất)
     clearToken() {
         localStorage.removeItem('token');
+        localStorage.removeItem('currentUser');
     }
 
     // Make authenticated request

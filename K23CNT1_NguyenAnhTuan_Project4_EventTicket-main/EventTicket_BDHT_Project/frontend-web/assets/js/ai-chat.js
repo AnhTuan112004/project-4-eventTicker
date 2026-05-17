@@ -47,7 +47,7 @@ async function initAiChat() {
 
     async function newSession() {
         try {
-            const response = await window.apiClient.get('/api/vtd/public/ai-chat/generate-session');
+            const response = await window.apiClient.get('/api/nat/public/ai-chat/generate-session');
             sessionInput.value = response.sessionCode || '';
             chatBox.innerHTML = '<div class="chat-message">Phiên chat mới đã được tạo. Hãy bắt đầu đặt câu hỏi.</div>';
         } catch (error) {
@@ -74,7 +74,7 @@ async function initAiChat() {
         messageInput.value = '';
 
         try {
-            const response = await window.apiClient.post('/api/vtd/public/ai-chat/message', {
+            const response = await window.apiClient.post('/api/nat/public/ai-chat/message', {
                 sessionCode,
                 message
             });

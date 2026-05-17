@@ -65,7 +65,6 @@ com\eventticket\entity\G8_order.class
 com\eventticket\repository\ReviewRepository.class
 com\eventticket\repository\TicketRepository.class
 com\eventticket\repository\EventRepository.class
-com\eventticket\repository\OrderItemRepository.class
 com\eventticket\entity\G8_AiChatLog.class
 com\eventticket\service\PromotionService.class
 com\eventticket\entity\G8_users.class

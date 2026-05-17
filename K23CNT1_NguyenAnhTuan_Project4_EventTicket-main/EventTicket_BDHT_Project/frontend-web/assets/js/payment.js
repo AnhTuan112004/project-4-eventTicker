@@ -50,7 +50,7 @@ async function loadPaymentData() {
     }
 
     try {
-        const order = await window.apiClient.get(`/api/vtd/member/orders/${orderId}`);
+        const order = await window.apiClient.get(`/api/nat/member/orders/${orderId}`);
         paymentInfo.innerHTML = `
             <p><strong>Đơn hàng #${order.orderId || order.id || orderId}</strong></p>
             <p>Trạng thái: ${order.status || order.orderStatus || 'PENDING'}</p>
@@ -63,7 +63,7 @@ async function loadPaymentData() {
             paymentResult.innerText = 'Đang tạo thanh toán...';
             try {
                 const method = document.getElementById('payment-method').value;
-                const payment = await window.apiClient.post('/api/vtd/member/payments', {
+                const payment = await window.apiClient.post('/api/nat/member/payments', {
                     orderId: Number(orderId),
                     paymentMethod: method
                 });

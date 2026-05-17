@@ -1,31 +1,58 @@
-<header style="background-color: #343a40; padding: 15px 0; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-    <nav class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            
-            <h1 style="margin:0; font-size: 24px;">
-                <a href="/index.html" style="color:white; text-decoration:none;">🎟️ EventTicket</a>
-            </h1>
-
-            <div style="display: flex; gap: 18px; align-items: center;">
-                <a href="/index.html" style="color:white; text-decoration:none;">Trang chủ</a>
-                <a href="/pages/user/venues.html" style="color:white; text-decoration:none;">Địa điểm</a>
-                <a href="/pages/user/promotion.html" style="color:white; text-decoration:none;">Khuyến mãi</a>
-                <a href="/pages/user/ai-chat.html" style="color:white; text-decoration:none;">Chat AI</a>
-                <a href="/pages/user/cart.html" style="color:white; text-decoration:none;">Giỏ hàng</a>
+<header>
+    <!-- Top Bar -->
+    <div class="header-top">
+        <div class="container">
+            <!-- Logo -->
+            <div class="logo">
+                <a href="/index.html">
+                    <h1>TicketGo</h1>
+                    <p>Đi chơi đâu, lên Ticketgo</p>
+                </a>
             </div>
 
-            <div id="guest-menu" style="display: flex; gap: 15px;">
-                <a href="/pages/user/login.html" style="color:white; text-decoration:none; padding: 8px 15px; border: 1px solid white; border-radius: 4px;">Đăng Nhập</a>
-                <a href="/pages/user/register.html" style="color:white; text-decoration:none; padding: 8px 15px; background-color: #007bff; border-radius: 4px;">Đăng Ký</a>
+            <!-- Search -->
+            <div class="search-bar">
+                <input type="text" placeholder="Tìm kiếm...">
+                <button><i class="fas fa-search"></i></button>
             </div>
 
-            <div id="user-menu" style="display: none; gap: 15px; align-items: center;">
-                <a href="/pages/user/profile.html" style="color:white; text-decoration:none; font-weight: bold;">Hồ Sơ</a>
-                <button id="btn-logout" style="padding: 8px 15px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
-                    Đăng Xuất
-                </button>
+            <!-- User Actions -->
+            <div class="header-actions">
+                <div id="guest-menu" style="display: flex; gap: 15px;">
+                    <a href="/pages/user/login.html">Đăng nhập</a>
+                    <a href="/pages/user/register.html">Đăng ký</a>
+                </div>
+                <div id="user-menu" style="display: none; gap: 15px; align-items: center;">
+                    <a href="/pages/user/profile.html" style="font-weight: 500;">Hồ sơ</a>
+                    <a href="#" id="btn-logout" style="color: var(--secondary-color);">Đăng xuất</a>
+                </div>
+                <div class="lang-selector">
+                    <img src="https://flagcdn.com/w20/vn.png" alt="VN">
+                    <i class="fas fa-caret-down" style="margin-left:5px; font-size:10px;"></i>
+                </div>
             </div>
-
         </div>
-    </nav>
+    </div>
+
+    <!-- Navigation Bar -->
+    <div class="header-nav">
+        <div class="container">
+            <div class="nav-links">
+                <a href="#">Vé ca nhạc</a>
+                <a href="#">Văn hóa nghệ thuật</a>
+                <a href="#">Vé tham quan - du lịch</a>
+                <a href="#">Workshop</a>
+                <a href="#">Vé xem phim</a>
+                <a href="#">Thể thao</a>
+                <a href="#">Tin tức</a>
+            </div>
+            <div>
+                <select class="location-selector">
+                    <option value="">Chọn địa điểm</option>
+                    <option value="HN">Hà Nội</option>
+                    <option value="HCM">TP. Hồ Chí Minh</option>
+                </select>
+            </div>
+        </div>
+    </div>
 </header>
