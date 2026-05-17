@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat AI - EventTicket</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        .chat-page { max-width: 900px; margin: 40px auto; padding: 20px; }
+        .chat-panel { border:1px solid #ddd; border-radius:12px; padding:22px; background:#fff; }
+        .chat-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+        .chat-box { min-height: 300px; border:1px solid #ccc; border-radius:10px; padding:18px; overflow-y:auto; max-height:420px; background:#f9f9f9; }
+        .chat-message { margin-bottom:16px; }
+        .chat-message.user { text-align:right; }
+        .chat-message .message-label { display:inline-block; background:#007bff; color:white; padding:10px 14px; border-radius:18px; max-width:80%; }
+        .chat-message.ai .message-label { background:#6c757d; }
+        .chat-input-row { display:flex; gap:12px; margin-top:18px; }
+        .chat-input-row input { flex:1; padding:12px; border-radius:8px; border:1px solid #ccc; }
+        .chat-input-row button { padding:12px 20px; border:none; border-radius:8px; background:#28a745; color:#fff; cursor:pointer; }
+    </style>
+</head>
+<body>
+    <div id="header-container"></div>
+    <main class="chat-page">
+        <section class="chat-panel">
+            <div class="chat-header">
+                <div>
+                    <h1>Chat hỗ trợ</h1>
+                    <p>Trò chuyện với trợ lý AI để tìm hiểu về sự kiện, vé và hướng dẫn sử dụng.</p>
+                </div>
+                <button id="btn-new-session" class="btn-action" style="background:#17a2b8;">Tạo phiên mới</button>
+            </div>
+            <div class="field-group">
+                <label>Mã phiên</label>
+                <input type="text" id="session-code" readonly style="background:#f1f1f1;" />
+            </div>
+            <div class="chat-box" id="chat-box"></div>
+            <div class="chat-input-row">
+                <input type="text" id="chat-message" placeholder="Nhập tin nhắn của bạn..." />
+                <button id="btn-send">Gửi</button>
+            </div>
+        </section>
+    </main>
+    <script src="/assets/js/core/api-client.js"></script>
+    <script src="/assets/js/ai-chat.js"></script>
+</body>
+</html>

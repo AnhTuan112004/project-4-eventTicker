@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hồ Sơ - EventTicket</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        .profile-page { max-width: 1000px; margin: 40px auto; padding: 20px; }
+        .profile-card { display: flex; flex-wrap: wrap; gap: 20px; border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #fff; }
+        .profile-summary { flex: 1 1 280px; min-width: 270px; }
+        .profile-summary h2 { margin-top: 0; }
+        .profile-summary p { margin: 8px 0; }
+        .section { margin-top: 30px; }
+        .section h3 { margin-bottom: 15px; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        .data-table th { background: #f1f1f1; }
+        .empty-state { color: #666; font-style: italic; }
+        .btn-logout-inline { display: inline-block; margin-top: 15px; padding: 10px 18px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        .order-item { margin-bottom: 18px; border: 1px solid #eee; border-radius: 10px; padding: 16px; }
+        .order-item strong { display: block; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <div id="header-container"></div>
+    <main class="profile-page">
+        <section class="profile-card">
+            <div class="profile-summary">
+                <h2>Hồ sơ của bạn</h2>
+                <p><strong>Họ tên:</strong> <span id="profile-fullname">...</span></p>
+                <p><strong>Email:</strong> <span id="profile-email">...</span></p>
+                <p><strong>Số điện thoại:</strong> <span id="profile-phone">...</span></p>
+                <p><strong>Quyền:</strong> <span id="profile-role">...</span></p>
+                <button id="btn-logout" class="btn-logout-inline">Đăng xuất</button>
+            </div>
+            <div class="profile-summary" style="min-width: 320px;">
+                <h2>Cập nhật hồ sơ</h2>
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label for="updateFullName">Họ và Tên</label>
+                        <input type="text" id="updateFullName" placeholder="Họ và tên" style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc;" />
+                    </div>
+                    <div class="form-group">
+                        <label for="updatePhone">Số điện thoại</label>
+                        <input type="text" id="updatePhone" placeholder="Số điện thoại" style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc;" />
+                    </div>
+                    <button type="submit" class="btn-main" style="background:#007bff; width:100%;">Lưu thông tin</button>
+                    <div id="profile-update-msg" style="margin-top: 12px; font-weight: bold;"></div>
+                </form>
+
+                <h2 style="margin-top:30px;">Đổi mật khẩu</h2>
+                <form id="password-form">
+                    <div class="form-group">
+                        <label for="currentPassword">Mật khẩu hiện tại</label>
+                        <input type="password" id="currentPassword" placeholder="Mật khẩu hiện tại" style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc;" />
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">Mật khẩu mới</label>
+                        <input type="password" id="newPassword" placeholder="Mật khẩu mới" style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc;" />
+                    </div>
+                    <button type="submit" class="btn-main" style="background:#17a2b8; width:100%;">Đổi mật khẩu</button>
+                    <div id="password-change-msg" style="margin-top: 12px; font-weight: bold;"></div>
+                </form>
+            </div>
+        </section>
+
+        <section class="section">
+            <h3>Đơn hàng của bạn</h3>
+            <div id="orders-container" class="empty-state">Đang tải dữ liệu đơn hàng...</div>
+        </section>
+
+        <section class="section">
+            <h3>Vé đã mua</h3>
+            <div id="tickets-container" class="empty-state">Đang tải dữ liệu vé...</div>
+        </section>
+    </main>
+
+    <script src="/assets/js/core/api-client.js"></script>
+    <script src="/assets/js/profile.js"></script>
+</body>
+</html>
