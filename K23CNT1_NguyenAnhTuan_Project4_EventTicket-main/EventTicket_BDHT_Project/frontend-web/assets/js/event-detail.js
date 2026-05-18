@@ -29,19 +29,29 @@ async function loadEventDetails() {
         loadingMsg.style.display = 'none';
         eventContent.style.display = 'flex';
 
-        document.getElementById('detail-title').innerText = event.title || event.name || event.eventName || 'Sự kiện không tên';
-        document.getElementById('detail-venue').innerText = (event.venue && event.venue.venueName) ? event.venue.venueName : (event.venueName || event.location || 'Chưa cập nhật');
-        document.getElementById('detail-desc').innerText = event.description || event.desc || 'Chưa có thông tin mô tả chi tiết.';
+        const titleEl = document.getElementById('detail-title');
+        if (titleEl) titleEl.innerText = event.title || event.name || event.eventName || 'Sự kiện không tên';
+
+        const venueEl = document.getElementById('detail-venue');
+        if (venueEl) venueEl.innerText = (event.venue && event.venue.venueName) ? event.venue.venueName : (event.venueName || event.location || 'Chưa cập nhật');
+
+        const descEl = document.getElementById('detail-desc');
+        if (descEl) descEl.innerText = event.description || event.desc || 'Chưa có thông tin mô tả chi tiết.';
+        
         const rawDate = event.startTime || event.date;
-        if (rawDate) {
+        const dateEl = document.getElementById('detail-date');
+        if (rawDate && dateEl) {
             const d = new Date(rawDate);
-            document.getElementById('detail-date').innerText = d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            dateEl.innerText = d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
         }
+        
         const imgUrl = event.bannerImageUrl || event.imageUrl || 'https://via.placeholder.com/800x450?text=Sự+kiện';
-        document.getElementById('detail-image').src = imgUrl;
+        const imgEl = document.getElementById('detail-image');
+        if (imgEl) imgEl.src = imgUrl;
 
         const price = event.price || event.minPrice || 0;
-        document.getElementById('detail-price').innerText = price ? (price.toLocaleString('vi-VN') + ' VNĐ') : 'Liên hệ';
+        const priceEl = document.getElementById('detail-price');
+        if (priceEl) priceEl.innerText = price ? (price.toLocaleString('vi-VN') + ' VNĐ') : 'Liên hệ';
 
         if (venueInfo) {
             venueInfo.innerHTML = renderVenueInfo(event.venue || {

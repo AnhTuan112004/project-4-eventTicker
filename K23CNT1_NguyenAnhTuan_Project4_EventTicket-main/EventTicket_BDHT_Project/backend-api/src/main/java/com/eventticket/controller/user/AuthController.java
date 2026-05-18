@@ -14,6 +14,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.HashMap;
 import java.util.Map;
+import com.eventticket.security.JwtUtil;
 
 @RestController
 @RequestMapping("/api/nat/public/auth")
@@ -21,6 +22,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody RegisterRequest request) {
@@ -46,9 +50,15 @@ public class AuthController {
     public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
         try {
             G8_users user = authService.loginUser(request.getEmail(), request.getPassword());
+            
+            // [FIX] Tạo JWT token khi đăng nhập thành công
+            String roleStr = user.getRole() != null ? user.getRole() : "USER";
+            String token = jwtUtil.generateToken(user.getEmail(), roleStr);
+
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Đăng nhập thành công");
             response.put("user", user);
+            response.put("token", token); // Trả về token cho Frontend
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -81,36 +91,42 @@ public class AuthController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<Map<String, String>> verifyOtp(@RequestBody VerifyOtpRequest request) {
+    public ResponseEntity<Map<String, Object>> verifyOtp(@RequestBody VerifyOtpRequest request) {
         try {
             authService.verifyOtp(request.getEmail(), request.getOtp());
-            Map<String, String> response = new HashMap<>();
+            Map<String, Object> response = new HashMap<>();
+            response.put("verified", true);
             response.put("message", "OTP xác thực thành công! Bạn có thể đặt lại mật khẩu.");
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            Map<String, String> errorResponse = new HashMap<>();
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("verified", false);
             errorResponse.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         } catch (Exception e) {
-            Map<String, String> errorResponse = new HashMap<>();
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("verified", false);
             errorResponse.put("error", "Lỗi hệ thống: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<Map<String, String>> resetPassword(@RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<Map<String, Object>> resetPassword(@RequestBody ResetPasswordRequest request) {
         try {
             authService.resetPassword(request.getEmail(), request.getNewPassword());
-            Map<String, String> response = new HashMap<>();
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
             response.put("message", "Mật khẩu đã được đặt lại thành công!");
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            Map<String, String> errorResponse = new HashMap<>();
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
             errorResponse.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         } catch (Exception e) {
-            Map<String, String> errorResponse = new HashMap<>();
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
             errorResponse.put("error", "Lỗi hệ thống: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }

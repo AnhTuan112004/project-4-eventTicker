@@ -113,37 +113,6 @@ function setupRegister() {
 // 3. QUÊN MẬT KHẨU
 // ==========================================
 function setupExtendFeatures() {
-    const btnForgotPassword = document.getElementById('btn-forgot-password');
-    if (btnForgotPassword) {
-        btnForgotPassword.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email')?.value;
-            if (!email) {
-                alert("Vui lòng nhập Email của bạn vào ô 'Email đăng nhập' rồi bấm nút Quên mật khẩu!");
-                return;
-            }
-
-            try {
-                await window.apiClient.post('/api/nat/public/auth/forgot-password', { email: email });
-                const otp = prompt(`Mã OTP đã được gửi đến ${email}.\nVui lòng nhập mã OTP vào đây:`);
-                if (!otp) {
-                    alert('Bạn đã hủy thao tác nhập OTP.');
-                    return;
-                }
-                await window.apiClient.post('/api/nat/public/auth/verify-otp', { email: email, otp: otp });
-                const newPassword = prompt('Xác thực OTP thành công!\nVui lòng nhập mật khẩu mới:');
-                if (!newPassword) {
-                    alert('Bạn đã hủy thao tác đặt lại mật khẩu.');
-                    return;
-                }
-                await window.apiClient.post('/api/nat/public/auth/reset-password', { email: email, newPassword: newPassword });
-                alert('Đổi mật khẩu thành công! Bây giờ bạn có thể đăng nhập bằng mật khẩu mới.');
-            } catch (error) {
-                alert('Lỗi: ' + (error.message || 'Đã xảy ra sự cố.'));
-            }
-        });
-    }
-
     const btnGoogle = document.getElementById('btn-google');
     if (btnGoogle) btnGoogle.addEventListener('click', () => alert("Chức năng 'Đăng nhập Google' đang phát triển."));
     const btnFacebook = document.getElementById('btn-facebook');
