@@ -17,6 +17,46 @@
             <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=1200&auto=format&fit=crop" alt="Event Banner">
         </section>
 
+        <!-- Feature Section -->
+        <section class="container feature-section">
+            <h2 class="section-title">Khám phá tính năng</h2>
+            <p class="section-subtitle">Trang chủ đã kết nối với các chức năng backend chính: AI chat, vé, đơn hàng, đánh giá, khuyến mãi, thanh toán, hồ sơ và địa điểm.</p>
+            <div class="feature-grid" id="feature-grid">
+                <a class="feature-card" href="/pages/user/ai-chat.html">
+                    <h3>Chat AI</h3>
+                    <p>Tư vấn nhanh sự kiện và đặt vé.</p>
+                </a>
+                <a class="feature-card" href="/pages/user/promotion.html">
+                    <h3>Khuyến mãi</h3>
+                    <p>Áp mã giảm giá và ưu đãi mới nhất.</p>
+                </a>
+                <a class="feature-card" href="/pages/user/payment.html">
+                    <h3>Thanh toán</h3>
+                    <p>Hoàn tất đơn hàng an toàn.</p>
+                </a>
+                <a class="feature-card" href="/pages/user/profile.html">
+                    <h3>Hồ sơ</h3>
+                    <p>Quản lý tài khoản và thông tin cá nhân.</p>
+                </a>
+                <a class="feature-card" href="/pages/user/profile.html">
+                    <h3>Đơn hàng & Vé</h3>
+                    <p>Xem lịch sử đơn hàng và vé đã mua.</p>
+                </a>
+                <a class="feature-card" href="/pages/user/reviews.html">
+                    <h3>Đánh giá</h3>
+                    <p>Quản lý đánh giá trải nghiệm sự kiện của bạn.</p>
+                </a>
+                <a class="feature-card" href="/pages/user/venues.html">
+                    <h3>Địa điểm</h3>
+                    <p>Xem chi tiết nhà thi đấu và sân khấu.</p>
+                </a>
+                <a class="feature-card" href="/index.html">
+                    <h3>Danh sách sự kiện</h3>
+                    <p>Duyệt tất cả sự kiện và loại vé.</p>
+                </a>
+            </div>
+        </section>
+
         <!-- Events Section -->
         <section class="container">
             <div class="home-search-panel">
@@ -118,6 +158,12 @@
         .category-filters { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
         .category-chip { padding: 8px 14px; border-radius: 999px; background:#f1f1f1; border:1px solid #ddd; cursor:pointer; transition: all .2s ease; }
         .category-chip.active, .category-chip:hover { background:#007bff; color:#fff; border-color:#007bff; }
+        .feature-section { padding: 40px 0; }
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-top: 20px; }
+        .feature-card { display: block; padding: 24px 20px; border-radius: 16px; border: 1px solid rgba(0,0,0,0.08); background: #fff; box-shadow: 0 12px 30px rgba(0,0,0,0.06); text-decoration: none; color: #222; transition: transform .2s ease, border-color .2s ease; }
+        .feature-card:hover { transform: translateY(-4px); border-color: #007bff; }
+        .feature-card h3 { margin: 0 0 12px; font-size: 18px; }
+        .feature-card p { margin: 0; color: #555; line-height: 1.6; }
     </style>
 
     <script>

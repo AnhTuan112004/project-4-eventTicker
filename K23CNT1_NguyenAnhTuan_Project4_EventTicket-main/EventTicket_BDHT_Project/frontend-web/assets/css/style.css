@@ -388,6 +388,123 @@ main {
     border: 1px solid white;
 }
 
+.review-list {
+    display: grid;
+    gap: 20px;
+}
+
+.review-card {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.04);
+}
+
+.review-card h3 {
+    margin-bottom: 12px;
+    font-size: 1.25rem;
+}
+
+.review-meta,
+.review-comment {
+    margin-bottom: 10px;
+    color: var(--text-light);
+}
+
+.review-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.review-input {
+    width: 100%;
+    min-height: 110px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 8px;
+    font-size: 0.95rem;
+    resize: vertical;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 9999;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.modal-content {
+    width: min(600px, 100%);
+    background: var(--white);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+}
+
+.modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-color);
+}
+
+.modal-content h2 {
+    margin-bottom: 16px;
+    font-size: 1.3rem;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.review-rating {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.review-rating label {
+    font-weight: 600;
+}
+
+.review-rating select {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: white;
+}
+
+.btn-secondary {
+    background: #6c757d;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
 .chat-widget {
     position: fixed;
     bottom: 20px;
