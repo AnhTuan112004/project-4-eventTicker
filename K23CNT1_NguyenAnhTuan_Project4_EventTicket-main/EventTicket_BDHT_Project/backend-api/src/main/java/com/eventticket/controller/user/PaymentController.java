@@ -45,7 +45,7 @@ public class PaymentController {
     /**
      * MEMBER: Tạo giao dịch thanh toán
      */
-    @PostMapping("/api/vtd/member/payments")
+    @PostMapping("/api/nat/member/payments")
     public ResponseEntity<G8_payment> createPayment(@RequestBody CreatePaymentRequest request) {
         Integer userId = getCurrentUserId();
         if (userId == null) {
@@ -62,7 +62,7 @@ public class PaymentController {
     /**
      * MEMBER: Kiểm tra trạng thái thanh toán
      */
-    @GetMapping("/api/vtd/member/payments/{paymentId}")
+    @GetMapping("/api/nat/member/payments/{paymentId}")
     public ResponseEntity<G8_payment> getPaymentStatus(@PathVariable Integer paymentId) {
         G8_payment payment = paymentService.getPaymentStatus(paymentId);
         return ResponseEntity.ok(payment);
@@ -71,7 +71,7 @@ public class PaymentController {
     /**
      * INTERNAL: Webhook - Cập nhật trạng thái thanh toán từ cổng thanh toán
      */
-    @PostMapping("/api/vtd/public/payments/{paymentId}/webhook")
+    @PostMapping("/api/nat/public/payments/{paymentId}/webhook")
     public ResponseEntity<Map<String, String>> updatePaymentStatus(
             @PathVariable Integer paymentId,
             @RequestBody PaymentWebhookRequest request) {
@@ -90,7 +90,7 @@ public class PaymentController {
     /**
      * MEMBER: Hoàn tiền (yêu cầu hoàn lại)
      */
-    @PostMapping("/api/vtd/member/payments/{paymentId}/refund")
+    @PostMapping("/api/nat/member/payments/{paymentId}/refund")
     public ResponseEntity<G8_payment> requestRefund(@PathVariable Integer paymentId) {
         G8_payment payment = paymentService.requestRefund(paymentId);
         return ResponseEntity.ok(payment);

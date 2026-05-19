@@ -4,10 +4,16 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 async function initializeHomePage() {
-    await window.pageUtils.loadHeader();
+    if (window.pageUtils && window.pageUtils.loadHeader) {
+        await window.pageUtils.loadHeader();
+    }
     await loadHomePage();
     setupHomeSearch();
-    await window.pageUtils.loadFooter();
+    setupDateFilter();
+    initHeroSlider();
+    if (window.pageUtils && window.pageUtils.loadFooter) {
+        await window.pageUtils.loadFooter();
+    }
     await applyCategoryFromQuery();
 }
 
@@ -30,54 +36,203 @@ async function applyCategoryFromQuery() {
 }
 
 // ==========================================
-// 1. CÁC HÀM XỬ LÝ HEADER & FOOTER
+// 1. CÁC HÀM XỬ LÝ TRANG CHỦ
 // ==========================================
-function setupHeaderLogic() {
-    const token = window.apiClient ? window.apiClient.getToken() : null;
-    const storedUser = localStorage.getItem('currentUser');
-    const isLoggedIn = token || storedUser;
-    const guestMenu = document.getElementById('guest-menu');
-    const userMenu = document.getElementById('user-menu');
-    const btnLogout = document.getElementById('btn-logout');
+async function loadHomePage() {
+    const giantContainer = document.getElementById('featured-giant-container');
+    const gridContainer = document.getElementById('featured-grid-container');
+    const categoryFilters = document.getElementById('category-filters');
+    const musicContainer = document.getElementById('music-event-list');
+    const cultureContainer = document.getElementById('culture-event-list');
+    const tourismContainer = document.getElementById('tourism-event-list');
 
-    if (isLoggedIn) {
-        if (guestMenu) guestMenu.style.display = 'none';
-        if (userMenu) userMenu.style.display = 'flex';
-        if (btnLogout) {
-            btnLogout.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (window.apiClient) window.apiClient.clearToken();
-                window.location.href = window.pageUtils.resolveUrl('/pages/index.html');
-            });
+    // Dữ liệu mock phòng vệ đỉnh cao trong trường hợp DB trống
+    const mockEvents = [
+        {
+            eventId: 1,
+            name: "Liveshow HÀ NHI - Người yêu cũ là Tri kỷ",
+            location: "Ecopark Hưng Yên",
+            cityName: "Hà Nội",
+            bannerImageUrl: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=600",
+            minPrice: 3100000,
+            date: "2026-07-25T19:30:00",
+            category: "Vé ca nhạc"
+        },
+        {
+            eventId: 2,
+            name: "À Ố Show - Vở diễn Xiếc tre đặc sắc",
+            location: "Nhà Hát Lớn TP. Hồ Chí Minh",
+            cityName: "TP. HCM",
+            bannerImageUrl: "https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=600",
+            minPrice: 700000,
+            date: "2026-07-15T20:00:00",
+            category: "Văn hóa nghệ thuật"
+        },
+        {
+            eventId: 3,
+            name: "Tinh Hoa Bắc Bộ - The Quintessence of Tonkin",
+            location: "Chùa Thầy, Quốc Oai, Hà Nội",
+            cityName: "Hà Nội",
+            bannerImageUrl: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=600",
+            minPrice: 450000,
+            date: "2026-07-22T19:00:00",
+            category: "Văn hóa nghệ thuật"
+        },
+        {
+            eventId: 4,
+            name: "Dragon Ocean Concert - Dòng Chảy | Phương Linh",
+            location: "Khu du lịch Đồi Rồng, Hải Phòng",
+            cityName: "Hà Nội",
+            bannerImageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=600",
+            minPrice: 800000,
+            date: "2026-09-05T20:00:00",
+            category: "Vé ca nhạc"
+        },
+        {
+            eventId: 5,
+            name: "Tour Trekking & Cắm trại Hồ Ba Bể kì vĩ",
+            location: "Hồ Ba Bể, Bắc Kạn",
+            cityName: "Hà Nội",
+            bannerImageUrl: "https://images.unsplash.com/photo-1470229722913-7c092fb6224d?q=80&w=600",
+            minPrice: 2389500,
+            date: "2026-08-12T07:00:00",
+            category: "Vé tham quan - du lịch"
+        },
+        {
+            eventId: 6,
+            name: "Show Diễn Ký Ức Hội An đỉnh cao nghệ thuật",
+            location: "Công viên Ấn tượng Hội An, Quảng Nam",
+            cityName: "Đà Nẵng",
+            bannerImageUrl: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=600",
+            minPrice: 600000,
+            date: "2026-08-20T20:00:00",
+            category: "Văn hóa nghệ thuật"
+        },
+        {
+            eventId: 7,
+            name: "Private Quốc Thiên In Fantasy show hoành tráng",
+            location: "Nhà Hát Lớn Hà Nội",
+            cityName: "Hà Nội",
+            bannerImageUrl: "https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=600",
+            minPrice: 1200000,
+            date: "2026-08-16T19:30:00",
+            category: "Vé ca nhạc"
+        },
+        {
+            eventId: 8,
+            name: "Workshop Nấu Ăn Ẩm Thực Ấn Độ Benaras",
+            location: "Quận 1, TP. Hồ Chí Minh",
+            cityName: "TP. HCM",
+            bannerImageUrl: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=600",
+            minPrice: 500000,
+            date: "2026-08-18T14:00:00",
+            category: "Workshop"
         }
-    } else {
-        if (guestMenu) guestMenu.style.display = 'flex';
-        if (userMenu) userMenu.style.display = 'none';
+    ];
+
+    try {
+        let homeData = { categories: [], featuredEvents: [], latestEvents: [] };
+        if (window.apiClient) {
+            try {
+                homeData = await window.apiClient.get('/api/nat/public/home');
+            } catch(apiErr) {
+                console.warn("Lỗi API public/home, chuyển sang mock data:", apiErr);
+            }
+        }
+
+        // Đổ categories filter chips
+        const categoriesList = homeData.categories && homeData.categories.length > 0 ? homeData.categories : ["Vé ca nhạc", "Văn hóa nghệ thuật", "Vé tham quan - du lịch", "Workshop", "Vé xem phim", "Thể thao"];
+        if (categoryFilters) renderCategoryFilters(categoriesList, categoryFilters);
+
+        // Đổ sự kiện nổi bật
+        let featuredList = homeData.featuredEvents || [];
+        if (featuredList.length === 0) {
+            featuredList = mockEvents.slice(0, 5);
+        }
+
+        // Render sự kiện nổi bật dạng grid: 1 card to trái, 4 card nhỏ bên phải
+        if (giantContainer && gridContainer) {
+            renderFeaturedGrid(featuredList, giantContainer, gridContainer);
+        }
+
+        // Phân loại các sự kiện cho danh mục
+        const allEvents = [...featuredList, ...(homeData.latestEvents || mockEvents)];
+        
+        // 1. Ca nhạc
+        const musicEvents = allEvents.filter(e => e.category === "Vé ca nhạc" || (e.category && e.category.toLowerCase().includes("nhạc"))).slice(0, 4);
+        if (musicContainer) renderCategoryList(musicEvents.length > 0 ? musicEvents : mockEvents.filter(e => e.category === "Vé ca nhạc").slice(0, 4), musicContainer);
+
+        // 2. Văn hóa nghệ thuật
+        const cultureEvents = allEvents.filter(e => e.category === "Văn hóa nghệ thuật" || (e.category && e.category.toLowerCase().includes("văn hóa"))).slice(0, 4);
+        if (cultureContainer) renderCategoryList(cultureEvents.length > 0 ? cultureEvents : mockEvents.filter(e => e.category === "Văn hóa nghệ thuật").slice(0, 4), cultureContainer);
+
+        // 3. Tham quan
+        const tourismEvents = allEvents.filter(e => e.category === "Vé tham quan - du lịch" || (e.category && e.category.toLowerCase().includes("tham quan"))).slice(0, 4);
+        if (tourismContainer) renderCategoryList(tourismEvents.length > 0 ? tourismEvents : mockEvents.filter(e => e.category === "Vé tham quan - du lịch").slice(0, 4), tourismContainer);
+
+        // Dựng Slider trượt ngang mini danh mục
+        renderMiniSlider(allEvents);
+
+    } catch (error) {
+        console.error('Lỗi khởi tạo homepage:', error);
+        // Fallback tối đa
+        if (giantContainer && gridContainer) renderFeaturedGrid(mockEvents.slice(0, 5), giantContainer, gridContainer);
+        if (musicContainer) renderCategoryList(mockEvents.filter(e => e.category === "Vé ca nhạc").slice(0, 4), musicContainer);
+        if (cultureContainer) renderCategoryList(mockEvents.filter(e => e.category === "Văn hóa nghệ thuật").slice(0, 4), cultureContainer);
+        if (tourismContainer) renderCategoryList(mockEvents.filter(e => e.category === "Vé tham quan - du lịch").slice(0, 4), tourismContainer);
+        renderMiniSlider(mockEvents);
     }
 }
 
 // ==========================================
-// 2. CÁC HÀM XỬ LÝ TRANG CHỦ
+// 6. LỌC SỰ KIỆN THEO NGÀY
 // ==========================================
-async function loadHomePage() {
-    const eventList = document.getElementById('event-list');
-    const latestList = document.getElementById('latest-event-list');
-    const categoryFilters = document.getElementById('category-filters');
+function setupDateFilter() {
+    const btnFilterDate = document.getElementById('btn-filter-date');
+    if (!btnFilterDate) return;
 
-    if (eventList) eventList.innerHTML = '<div style="grid-column: 1 / -1; text-align:center;">Đang tải sự kiện nổi bật...</div>';
-    if (latestList) latestList.innerHTML = '<div style="grid-column: 1 / -1; text-align:center;">Đang tải sự kiện mới nhất...</div>';
+    btnFilterDate.addEventListener('click', async () => {
+        const startDate = document.getElementById('filter-start-date').value;
+        const endDate = document.getElementById('filter-end-date').value;
 
-    try {
-        if (!window.apiClient) throw new Error('API Client không khả dụng');
-        const data = await window.apiClient.get('/api/vtd/public/home');
-        if (categoryFilters) renderCategoryFilters(data.categories || [], categoryFilters);
-        if (eventList) renderEventCards(data.featuredEvents || [], eventList, 'Không có sự kiện nổi bật.');
-        if (latestList) renderEventCards(data.latestEvents || [], latestList, 'Không có sự kiện mới nhất.');
-    } catch (error) {
-        console.error('Error loading home page data:', error);
-        if (eventList) eventList.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; color:red;">Lỗi tải dữ liệu: ${error.message}</div>`;
-        if (latestList) latestList.innerHTML = '<div style="grid-column: 1 / -1; text-align:center;">Không thể tải dữ liệu.</div>';
-    }
+        if (!startDate || !endDate) {
+            alert('Vui lòng chọn đầy đủ Từ ngày và Đến ngày!');
+            return;
+        }
+
+        const originalText = btnFilterDate.innerHTML;
+        
+        // Loading state
+        btnFilterDate.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lọc...';
+        btnFilterDate.classList.add('pointer-events-none', 'opacity-50');
+
+        try {
+            const response = await window.apiClient.get(`/api/nat/public/events/date-range?startDate=${startDate}&endDate=${endDate}`);
+            
+            const giantContainer = document.getElementById('featured-giant-container');
+            const gridContainer = document.getElementById('featured-grid-container');
+            
+            if (giantContainer && gridContainer) {
+                giantContainer.innerHTML = '';
+                gridContainer.innerHTML = '';
+                
+                if (response && response.length > 0) {
+                    renderFeaturedGrid(response, giantContainer, gridContainer);
+                } else {
+                    gridContainer.innerHTML = '<p class="text-gray-500 font-bold p-6 w-full text-center">Không tìm thấy sự kiện nào trong khoảng thời gian này.</p>';
+                }
+                
+                // Scroll down to results
+                giantContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } catch (err) {
+            console.error("Date Filter Error:", err);
+            alert('Có lỗi xảy ra khi lọc sự kiện.');
+        } finally {
+            btnFilterDate.innerHTML = originalText;
+            btnFilterDate.classList.remove('pointer-events-none', 'opacity-50');
+        }
+    });
 }
 
 function setupHomeSearch() {
@@ -103,27 +258,35 @@ function setupHomeSearch() {
     });
 }
 
-async function renderCategoryFilters(categories, container) {
+function renderCategoryFilters(categories, container) {
     if (!container) return;
     container.innerHTML = '';
 
     const allChip = document.createElement('div');
-    allChip.className = 'category-chip active';
+    allChip.className = 'px-4 py-2 border border-gray-200 rounded-full text-xs font-bold bg-white text-slate-700 cursor-pointer hover:border-brand-purple hover:text-brand-purple transition duration-200 category-chip active';
     allChip.innerText = 'Tất cả';
     allChip.addEventListener('click', async () => {
-        document.querySelectorAll('.category-chip').forEach(chip => chip.classList.remove('active'));
-        allChip.classList.add('active');
+        document.querySelectorAll('.category-chip').forEach(chip => {
+            chip.classList.remove('active', 'bg-brand-purple', 'text-white', 'border-brand-purple');
+            chip.classList.add('bg-white', 'text-slate-700', 'border-gray-200');
+        });
+        allChip.classList.add('active', 'bg-brand-purple', 'text-white', 'border-brand-purple');
+        allChip.classList.remove('bg-white', 'text-slate-700', 'border-gray-200');
         await loadHomePage();
     });
     container.appendChild(allChip);
 
     categories.forEach(category => {
         const chip = document.createElement('div');
-        chip.className = 'category-chip';
+        chip.className = 'px-4 py-2 border border-gray-200 rounded-full text-xs font-bold bg-white text-slate-700 cursor-pointer hover:border-brand-purple hover:text-brand-purple transition duration-200 category-chip';
         chip.innerText = category;
         chip.addEventListener('click', async () => {
-            document.querySelectorAll('.category-chip').forEach(chip => chip.classList.remove('active'));
-            chip.classList.add('active');
+            document.querySelectorAll('.category-chip').forEach(c => {
+                c.classList.remove('active', 'bg-brand-purple', 'text-white', 'border-brand-purple');
+                c.classList.add('bg-white', 'text-slate-700', 'border-gray-200');
+            });
+            chip.classList.add('active', 'bg-brand-purple', 'text-white', 'border-brand-purple');
+            chip.classList.remove('bg-white', 'text-slate-700', 'border-gray-200');
             await loadEventsByCategory(category);
         });
         container.appendChild(chip);
@@ -131,167 +294,256 @@ async function renderCategoryFilters(categories, container) {
 }
 
 async function searchEvents(keyword) {
-    const eventList = document.getElementById('event-list');
-    if (!eventList) return;
-    eventList.innerHTML = '<div style="grid-column: 1 / -1; text-align:center;">Đang tìm sự kiện...</div>';
+    const gridContainer = document.getElementById('featured-grid-container');
+    const giantContainer = document.getElementById('featured-giant-container');
+    if (!gridContainer || !giantContainer) return;
 
     try {
         if (!window.apiClient) throw new Error('API Client không khả dụng');
-        const events = await window.apiClient.get(`/api/vtd/public/events/search?keyword=${encodeURIComponent(keyword)}`);
-        renderEventCards(events, eventList, 'Không tìm thấy sự kiện phù hợp.');
+        const events = await window.apiClient.get(`/api/nat/public/events/search?keyword=${encodeURIComponent(keyword)}`);
+        
+        giantContainer.innerHTML = '';
+        if (events.length === 0) {
+            gridContainer.innerHTML = `<div class="col-span-2 text-center text-xs font-bold text-slate-400 py-12">Không tìm thấy sự kiện phù hợp.</div>`;
+        } else {
+            renderSmallEventList(events, gridContainer);
+        }
     } catch (error) {
         console.error('Error searching events:', error);
-        eventList.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; color:red;">Lỗi tìm kiếm: ${error.message}</div>`;
+        gridContainer.innerHTML = `<div class="col-span-2 text-center text-xs font-bold text-red-500 py-12">Không tìm thấy sự kiện phù hợp (Lỗi: ${error.message}).</div>`;
     }
 }
 
 async function loadEventsByCategory(category) {
-    const eventList = document.getElementById('event-list');
-    if (!eventList) return;
-    eventList.innerHTML = `<div style="grid-column: 1 / -1; text-align:center;">Đang tải sự kiện cho danh mục ${category}...</div>`;
+    const gridContainer = document.getElementById('featured-grid-container');
+    const giantContainer = document.getElementById('featured-giant-container');
+    if (!gridContainer || !giantContainer) return;
 
     try {
         if (!window.apiClient) throw new Error('API Client không khả dụng');
-        const events = await window.apiClient.get(`/api/vtd/public/events/category/${encodeURIComponent(category)}`);
-        renderEventCards(events, eventList, `Không có sự kiện trong danh mục ${category}.`);
+        const events = await window.apiClient.get(`/api/nat/public/events/category/${encodeURIComponent(category)}`);
+        
+        giantContainer.innerHTML = '';
+        if (events.length === 0) {
+            gridContainer.innerHTML = `<div class="col-span-2 text-center text-xs font-bold text-slate-400 py-12">Không có sự kiện thuộc danh mục này.</div>`;
+        } else {
+            renderSmallEventList(events, gridContainer);
+        }
     } catch (error) {
-        console.error('Error loading category events:', error);
-        eventList.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; color:red;">Lỗi tải danh mục: ${error.message}</div>`;
+        console.error('Error category events:', error);
+        gridContainer.innerHTML = `<div class="col-span-2 text-center text-xs font-bold text-slate-400 py-12">Không có sự kiện thuộc danh mục này.</div>`;
     }
 }
 
-function renderEventCards(events, container, emptyMessage) {
+// Render Grid: 1 giant trái, 4 small phải
+function renderFeaturedGrid(events, giantBox, gridBox) {
+    if (!events || events.length === 0) return;
+
+    // Giant card (Sự kiện đầu tiên)
+    const giantEvent = events[0];
+    const giantTitle = giantEvent.name || giantEvent.eventName || 'Sự kiện nổi bật';
+    const giantVenue = giantEvent.location || 'Địa điểm lớn';
+    const giantId = giantEvent.eventId || giantEvent.id;
+    const giantImg = giantEvent.bannerImageUrl || giantEvent.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800';
+    const giantCity = giantEvent.cityName || 'HÀ NỘI';
+    const giantPrice = giantEvent.minPrice ? new Intl.NumberFormat('vi-VN').format(giantEvent.minPrice) + ' VNĐ' : 'Liên hệ';
+    let giantDate = 'Sắp diễn ra';
+    if (giantEvent.date) {
+        giantDate = new Date(giantEvent.date).toLocaleDateString('vi-VN');
+    }
+
+    const giantDetailUrl = getDetailPath(giantId);
+
+    giantBox.innerHTML = `
+        <a href="${giantDetailUrl}" class="group block bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-2 transition-all duration-300 ease-in-out h-full flex flex-col">
+            <div class="relative w-full aspect-video sm:aspect-square overflow-hidden bg-slate-100 flex-shrink-0">
+                <span class="absolute top-4 left-4 bg-gray-900/80 backdrop-blur-md text-white font-extrabold text-[10px] px-3 py-1.5 rounded-full uppercase tracking-widest z-10">${giantCity}</span>
+                <img src="${giantImg}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" alt="${giantTitle}">
+                <div class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md text-gray-900 font-extrabold text-xs px-4 py-2 rounded-full shadow-sm z-10">Giá từ ${giantPrice}</div>
+            </div>
+            <div class="p-8 flex-1 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xl font-extrabold text-gray-900 group-hover:text-brand-purple transition-colors line-clamp-2 leading-snug tracking-tight">${giantTitle}</h3>
+                    <p class="text-sm font-medium text-gray-500 mt-3 flex items-center gap-2"><i class="fas fa-map-marker-alt text-brand-orange"></i> ${giantVenue}</p>
+                </div>
+                <div class="border-t border-gray-100 pt-5 mt-5 flex items-center justify-between text-xs font-bold text-gray-500">
+                    <span class="flex items-center gap-2"><i class="far fa-calendar-alt"></i> ${giantDate}</span>
+                    <span class="text-brand-orange hover:text-orange-600 inline-flex items-center gap-1.5 transition-colors">Mua vé <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </div>
+        </a>
+    `;
+
+    // 4 small cards
+    const smallEvents = events.slice(1, 5);
+    renderSmallEventList(smallEvents, gridBox);
+}
+
+function renderSmallEventList(events, container) {
     if (!container) return;
-    if (!events || events.length === 0) {
-        container.innerHTML = `<h3 style="text-align:center; width:100%;">${emptyMessage || 'Không có sự kiện nào.'}</h3>`;
-        return;
-    }
-
     container.innerHTML = events.map(event => {
-        const title = event.name || event.title || event.eventName || 'Chưa cập nhật tên';
-        const venue = (event.venue && event.venue.venueName) ? event.venue.venueName : (event.venueName || event.location || 'Chưa cập nhật');
-        const eventId = event.eventId || event.id;
-
-        let dateStr = 'Chưa có ngày';
-        const rawDate = event.date || event.startTime;
-        if (rawDate) {
-            dateStr = new Date(rawDate).toLocaleDateString('vi-VN');
+        const title = event.name || event.eventName || 'Sự kiện nổi bật';
+        const venue = event.location || 'Địa điểm tổ chức';
+        const id = event.eventId || event.id;
+        const img = event.bannerImageUrl || event.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500';
+        const city = event.cityName || 'HÀ NỘI';
+        const price = event.minPrice ? new Intl.NumberFormat('vi-VN').format(event.minPrice) + 'đ' : 'Liên hệ';
+        let date = 'Sắp diễn ra';
+        if (event.date) {
+            date = new Date(event.date).toLocaleDateString('vi-VN');
         }
 
-        const price = event.minPrice || event.price;
-        const priceLabel = price ? new Intl.NumberFormat('vi-VN').format(price) : 'Liên hệ';
-        const imgUrl = event.bannerImageUrl || event.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&auto=format&fit=crop';
+        const detailUrl = getDetailPath(id);
 
         return `
-            <a href="${window.pageUtils.resolveUrl(`/pages/user/event-detail.html?id=${eventId}`)}" class="event-card">
-                <img src="${imgUrl}" alt="${title}" class="event-img">
-                <div class="event-info">
-                    <div class="event-meta">
-                        <span class="event-location">📍 ${venue}</span>
-                        <span class="event-price">VNĐ ${priceLabel}</span>
+            <a href="${detailUrl}" class="group block bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-2 transition-all duration-300 ease-in-out flex">
+                <div class="relative w-2/5 aspect-[3/4] overflow-hidden bg-slate-100 flex-shrink-0">
+                    <span class="absolute top-3 left-3 bg-gray-900/80 backdrop-blur-md text-white font-extrabold text-[9px] px-2.5 py-1 rounded-full uppercase tracking-wider z-10">${city}</span>
+                    <img src="${img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" alt="${title}">
+                </div>
+                <div class="p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-extrabold text-gray-900 group-hover:text-brand-purple transition-colors line-clamp-2 leading-snug tracking-tight">${title}</h3>
+                        <p class="text-xs font-medium text-gray-500 mt-2 flex items-center gap-1.5"><i class="fas fa-map-marker-alt text-brand-orange"></i> ${venue}</p>
                     </div>
-                    <div class="event-title">${title}</div>
-                    <div class="event-meta">📅 ${dateStr}</div>
+                    <div class="border-t border-gray-50 pt-3 mt-3 flex items-center justify-between text-xs font-bold text-gray-500">
+                        <span class="flex items-center gap-1.5"><i class="far fa-calendar-alt"></i> ${date}</span>
+                        <span class="text-brand-orange bg-orange-50 px-2 py-1 rounded-md">${price}</span>
+                    </div>
                 </div>
             </a>
         `;
     }).join('');
 }
 
-function displayDummyEvents(container) {
-    const dummyEvents = [
-        { id: 1, title: 'Tour chèo SUP & Camping Hà Nội - Sơn La | Expedition', location: 'Hà Nội', price: '5.850.000 +' },
-        { id: 2, title: 'Tour chèo SUP-Trekking & Camping Hà Nội - Hồ Ba Bể', location: 'Hà Nội', price: '2.389.500 +' },
-        { id: 3, title: 'Workshop Nấu Ăn Ấn Độ tại Sài Gòn | Benaras cooking', location: 'Hồ Chí Minh', price: '500.000 +' },
-        { id: 4, title: 'Private Quốc Thiên In Fantasy show | 16.05.2026 tại Nhà Hát', location: 'Hà Nội', price: '800.000 +' }
-    ];
+function renderCategoryList(events, container) {
+    if (!container) return;
+    container.innerHTML = events.map(event => {
+        const title = event.name || event.eventName || 'Sự kiện đặc sắc';
+        const venue = event.location || 'Địa điểm tổ chức';
+        const id = event.eventId || event.id;
+        const img = event.bannerImageUrl || event.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500';
+        const price = event.minPrice ? new Intl.NumberFormat('vi-VN').format(event.minPrice) + 'đ' : 'Liên hệ';
+        let date = 'Sắp diễn ra';
+        if (event.date) {
+            date = new Date(event.date).toLocaleDateString('vi-VN');
+        }
 
-    container.innerHTML = dummyEvents.map(event => `
-        <a href="#" class="event-card">
-            <img src="https://images.unsplash.com/photo-1470229722913-7c092fb6224d?w=500&auto=format&fit=crop" alt="${event.title}" class="event-img">
-            <div class="event-info">
-                <div class="event-meta">
-                    <span class="event-location">📍 ${event.location}</span>
-                    <span class="event-price">VNĐ ${event.price}</span>
+        const detailUrl = getDetailPath(id);
+
+        return `
+            <a href="${detailUrl}" class="group block bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-2 transition-all duration-300 ease-in-out">
+                <div class="relative w-full aspect-video overflow-hidden bg-slate-100 flex-shrink-0">
+                    <img src="${img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" alt="${title}">
+                    <div class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md text-gray-900 font-extrabold text-[11px] px-3 py-1.5 rounded-full shadow-sm z-10">${price}</div>
                 </div>
-                <div class="event-title">${event.title}</div>
-            </div>
-        </a>
-    `).join('');
+                <div class="p-6 flex flex-col justify-between h-[130px]">
+                    <h3 class="text-sm font-extrabold text-gray-900 group-hover:text-brand-purple transition-colors line-clamp-2 leading-snug tracking-tight">${title}</h3>
+                    <div class="flex flex-col gap-1.5 mt-auto">
+                        <span class="text-xs font-medium text-gray-500 flex items-center gap-1.5"><i class="fas fa-map-marker-alt text-brand-orange"></i> ${venue}</span>
+                        <span class="text-xs font-bold text-gray-500 flex items-center gap-1.5"><i class="far fa-calendar-alt"></i> ${date}</span>
+                    </div>
+                </div>
+            </a>
+        `;
+    }).join('');
+}
+
+function getDetailPath(id) {
+    if (window.pageUtils && window.pageUtils.resolveUrl) {
+        return window.pageUtils.resolveUrl(`pages/user/event-detail.html?id=${id}`);
+    }
+    return window.location.pathname.includes('/pages/') ? `user/event-detail.html?id=${id}` : `pages/user/event-detail.html?id=${id}`;
 }
 
 // ==========================================
-// 2. CÁC HÀM XỬ LÝ SỰ KIỆN
+// 2. HERO SLIDER CAROUSEL LOGIC
 // ==========================================
-async function loadEvents() {
-    const eventsContainer = document.getElementById('event-list');
-    if (!eventsContainer) return;
+let heroIndex = 0;
+let heroInterval;
 
-    eventsContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align:center;">Đang tải sự kiện...</div>';
+function initHeroSlider() {
+    showHeroSlide(heroIndex);
+    startHeroInterval();
+}
+
+function showHeroSlide(idx) {
+    const track = document.getElementById('hero-slider-track');
+    const dots = document.querySelectorAll('.hero-dot');
+    if (!track) return;
     
-    try {
-        if (!window.apiClient) throw new Error("API Client không khả dụng");
-        const events = await window.apiClient.get('/api/vtd/public/events');
-        displayEvents(events, eventsContainer);
-    } catch (error) {
-        console.error('Error loading events:', error);
-        // Hiển thị dummy event nếu API lỗi để demo UI
-        displayDummyEvents(eventsContainer);
-    }
+    const slidesCount = 3;
+    if (idx >= slidesCount) heroIndex = 0;
+    if (idx < 0) heroIndex = slidesCount - 1;
+
+    track.style.transform = `translateX(-${heroIndex * 100}%)`;
+    
+    dots.forEach((dot, index) => {
+        if (index === heroIndex) {
+            dot.classList.add('active', 'w-5', 'bg-orange-500');
+            dot.classList.remove('bg-white/50', 'w-2.5');
+        } else {
+            dot.classList.remove('active', 'w-5', 'bg-orange-500');
+            dot.classList.add('bg-white/50', 'w-2.5');
+        }
+    });
 }
 
-function displayEvents(events, container) {
-    if (!events || events.length === 0) {
-        displayDummyEvents(container);
-        return;
-    }
+window.moveHeroSlide = function(n) {
+    clearInterval(heroInterval);
+    heroIndex += n;
+    showHeroSlide(heroIndex);
+    startHeroInterval();
+};
 
-    container.innerHTML = events.map(event => {
-        const title = event.title || event.name || event.eventName || 'Chưa cập nhật tên';
-        const venue = (event.venue && event.venue.venueName) ? event.venue.venueName : (event.venueName || event.location || 'Chưa cập nhật');
-        const eventId = event.eventId || event.id;
-        
-        let formattedPrice = 'Liên hệ';
-        const price = event.minPrice || event.price;
-        if (price) {
-            formattedPrice = new Intl.NumberFormat('vi-VN').format(price);
-        }
-        
-        const imgUrl = event.bannerImageUrl || event.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&auto=format&fit=crop';
+window.setHeroSlide = function(idx) {
+    clearInterval(heroInterval);
+    heroIndex = idx;
+    showHeroSlide(heroIndex);
+    startHeroInterval();
+};
+
+function startHeroInterval() {
+    clearInterval(heroInterval);
+    heroInterval = setInterval(() => {
+        heroIndex++;
+        showHeroSlide(heroIndex);
+    }, 3000); // 3 seconds interval
+}
+
+// ==========================================
+// 3. HORIZONTAL MINI SLIDER
+// ==========================================
+function renderMiniSlider(events) {
+    const track = document.getElementById('mini-slider-track');
+    if (!track) return;
+
+    const dummyMiniEvents = [
+        { id: 1, name: 'Hòa Nhạc Berliner', category: 'Vé ca nhạc', bannerImageUrl: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400' },
+        { id: 2, name: 'À Ố Show Tre Việt', category: 'Văn hóa nghệ thuật', bannerImageUrl: 'https://images.unsplash.com/photo-1506157786151-b8491531f063?w=400' },
+        { id: 3, name: 'Show Tinh Hoa Bắc Bộ', category: 'Văn hóa nghệ thuật', bannerImageUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400' },
+        { id: 4, name: 'Liveshow HÀ NHI', category: 'Vé ca nhạc', bannerImageUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400' },
+        { id: 5, name: 'Ký Ức Hội An', category: 'Văn hóa nghệ thuật', bannerImageUrl: 'https://images.unsplash.com/photo-1470229722913-7c092fb6224d?w=400' },
+        { id: 6, name: 'DaNang Craft Beer', category: 'Workshop', bannerImageUrl: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400' }
+    ];
+
+    const finalEvents = events && events.length >= 6 ? events.slice(0, 8) : dummyMiniEvents;
+
+    track.innerHTML = finalEvents.map(item => {
+        const title = item.name || item.eventName || item.title || 'Sự kiện';
+        const img = item.bannerImageUrl || item.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400';
+        const id = item.eventId || item.id;
+        const detailUrl = getDetailPath(id);
+        const categoryLabel = item.category || 'Sự kiện mới';
 
         return `
-            <a href="${window.pageUtils.resolveUrl(`/pages/user/event-detail.html?id=${eventId}`)}" class="event-card">
-                <img src="${imgUrl}" alt="${title}" class="event-img">
-                <div class="event-info">
-                    <div class="event-meta">
-                        <span class="event-location"><i class="fas fa-map-marker-alt"></i> ${venue}</span>
-                        <span class="event-price">VNĐ ${formattedPrice}</span>
-                    </div>
-                    <div class="event-title">${title}</div>
+            <a href="${detailUrl}" class="mini-slider-card group flex-shrink-0 block bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-2 transition-all duration-300 ease-in-out p-3">
+                <div class="relative w-full aspect-video rounded-2xl overflow-hidden bg-slate-100 mb-4">
+                    <img src="${img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" alt="${title}">
+                    <span class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md text-brand-purple font-extrabold text-[9px] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm z-10">${categoryLabel}</span>
                 </div>
+                <h4 class="text-sm font-extrabold text-gray-900 line-clamp-1 leading-snug group-hover:text-brand-purple transition-colors px-1 tracking-tight">${title}</h4>
             </a>
         `;
     }).join('');
-}
-
-function displayDummyEvents(container) {
-    const dummyEvents = [
-        { id: 1, title: 'Tour chèo SUP & Camping Hà Nội - Sơn La | Expedition', location: 'Hà Nội', price: '5.850.000 +' },
-        { id: 2, title: 'Tour chèo SUP-Trekking & Camping Hà Nội - Hồ Ba Bể', location: 'Hà Nội', price: '2.389.500 +' },
-        { id: 3, title: 'Workshop Nấu Ăn Ấn Độ tại Sài Gòn | Benaras cooking', location: 'Hồ Chí Minh', price: '500.000 +' },
-        { id: 4, title: 'Private Quốc Thiên In Fantasy show | 16.05.2026 tại Nhà Hát', location: 'Hà Nội', price: '800.000 +' }
-    ];
-
-    container.innerHTML = dummyEvents.map(event => `
-        <a href="#" class="event-card">
-            <img src="https://images.unsplash.com/photo-1470229722913-7c092fb6224d?w=500&auto=format&fit=crop" alt="${event.title}" class="event-img">
-            <div class="event-info">
-                <div class="event-meta">
-                    <span class="event-location"><i class="fas fa-map-marker-alt"></i> ${event.location}</span>
-                    <span class="event-price">VNĐ ${event.price}</span>
-                </div>
-                <div class="event-title">${event.title}</div>
-            </div>
-        </a>
-    `).join('');
 }

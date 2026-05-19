@@ -16,17 +16,27 @@ function getFrontendBasePath() {
 }
 
 function resolveAppUrl(path) {
-    if (!path || path.startsWith('http') || path.startsWith('javascript:') || path.startsWith('#')) {
+    if (!path || path.startsWith('http') || path.startsWith('javascript:') || path.startsWith('#') || path.startsWith('data:') || path.startsWith('mailto:') || path.startsWith('tel:')) {
         return path;
     }
 
-    const cleanPath = path.startsWith('/') ? path : `/${path}`;
-    return `${getFrontendBasePath()}${cleanPath}`;
+    const cleanPath = path.startsWith('./') ? path.slice(2) : path;
+    const appRootRelative = cleanPath.startsWith('pages/') || cleanPath.startsWith('components/') || cleanPath.startsWith('assets/') || cleanPath === 'index.html';
+
+    if (appRootRelative) {
+        return `${getFrontendBasePath()}/${cleanPath}`;
+    }
+
+    return new URL(cleanPath, window.location.href).href;
 }
 
 function rewriteInternalUrls(html) {
-    return html.replace(/\b(href|src)="\/(?!\/)([^"]*)"/g, (match, attr, path) => {
-        return `${attr}="${resolveAppUrl(`/${path}`)}"`;
+    return html.replace(/\b(href|src)="([^"]*)"/g, (match, attr, value) => {
+        if (!value || value.startsWith('http') || value.startsWith('javascript:') || value.startsWith('#') || value.startsWith('data:') || value.startsWith('mailto:') || value.startsWith('tel:')) {
+            return match;
+        }
+
+        return `${attr}="${resolveAppUrl(value)}"`;
     });
 }
 
@@ -71,7 +81,7 @@ class ApiClient {
             // Nếu lỗi 401 (chưa đăng nhập hoặc token hết hạn)
             if (response.status === 401) {
                 this.clearToken();
-                window.location.href = window.pageUtils.resolveUrl('/pages/user/login.html');
+                window.location.href = window.pageUtils.resolveUrl('pages/user/login.html');
                 return null;
             }
 
@@ -137,7 +147,7 @@ window.pageUtils = {
 
     async loadHeader() {
         try {
-            const response = await fetch(this.resolveUrl('/components/header.html'));
+            const response = await fetch(this.resolveUrl('components/header.html'));
             let headerHTML = rewriteInternalUrls(await response.text());
             const headerContainer = document.getElementById('header-container');
             if (headerContainer) {
@@ -152,17 +162,40 @@ window.pageUtils = {
  
     async loadFooter() {
             try {
-                const response = await fetch(this.resolveUrl('/components/footer.html'));
+                const response = await fetch(this.resolveUrl('components/footer.html'));
                 let footerHTML = rewriteInternalUrls(await response.text());
                 
                 const footerContainer = document.getElementById('footer-container');
                 if (footerContainer) {
                     footerContainer.innerHTML = footerHTML;
+                    this.setupFooterEvents();
                 }
             } catch (error) {
                 console.error('Lỗi khi load footer:', error);
             }
         },
+
+    setupFooterEvents() {
+        const subscribeBtn = document.getElementById('subscribe-btn');
+        const emailInput = document.getElementById('subscribe-email-input');
+        if (subscribeBtn && emailInput) {
+            subscribeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const email = emailInput.value.trim();
+                if (!email) {
+                    alert('Vui lòng nhập địa chỉ email hợp lệ để nhận bản tin!');
+                    return;
+                }
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    alert('Email không đúng định dạng. Vui lòng kiểm tra lại!');
+                    return;
+                }
+                alert(`🎉 Đăng ký nhận bản tin thành công!\nEmail: ${email}\n\nBDHT sẽ gửi các thông tin sự kiện & ưu đãi mới nhất tới hòm thư của bạn.`);
+                emailInput.value = '';
+            });
+        }
+    },
         
     setupAuthMenu() {
         const token = window.apiClient ? window.apiClient.getToken() : null;
@@ -176,11 +209,58 @@ window.pageUtils = {
         if (isLoggedIn) {
             if (guestMenu) guestMenu.style.display = 'none';
             if (userMenu) userMenu.style.display = 'flex';
+
+            // Cập nhật thông tin User động trong Header nếu có dữ liệu lưu trữ
+            const userDisplayName = document.getElementById('header-user-display-name');
+            const userAvatarChar = document.getElementById('header-user-avatar-char');
+            let userObj = null;
+            if (storedUser) {
+                try { userObj = JSON.parse(storedUser); } catch(e) {}
+            }
+            // Fallback sang dữ liệu checkout
+            if (!userObj) {
+                const checkoutDataStr = localStorage.getItem('checkoutData');
+                if (checkoutDataStr) {
+                    try {
+                        const checkoutData = JSON.parse(checkoutDataStr);
+                        if (checkoutData.customer) {
+                            userObj = { fullName: checkoutData.customer.name };
+                        }
+                    } catch(e) {}
+                }
+            }
+            if (userObj && userObj.fullName) {
+                if (userDisplayName) userDisplayName.innerText = userObj.fullName;
+                if (userAvatarChar) userAvatarChar.innerText = userObj.fullName.charAt(0).toUpperCase();
+            }
+
+            // Gắn sự kiện click mở Dropdown
+            const trigger = document.getElementById('user-dropdown-trigger');
+            const menu = document.getElementById('user-dropdown-menu');
+            if (trigger && menu) {
+                trigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    menu.classList.toggle('hidden');
+                });
+
+                // Đóng dropdown khi click ra bên ngoài
+                window.addEventListener('click', () => {
+                    if (!menu.classList.contains('hidden')) {
+                        menu.classList.add('hidden');
+                    }
+                });
+
+                // Ngăn sự kiện nổi bong bóng khi click trong menu
+                menu.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            }
+
             if (btnLogout) {
                 btnLogout.addEventListener('click', (e) => {
                     e.preventDefault();
                     window.apiClient.clearToken();
-                    window.location.href = window.pageUtils.resolveUrl('/pages/index.html');
+                    window.location.href = window.pageUtils.resolveUrl('index.html');
                 });
             }
         } else {

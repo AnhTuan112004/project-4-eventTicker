@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupLogin();
     setupRegister();
     setupSocialLogin();
+    setupGlobalLogout();
 });
 
 const SOCIAL_AUTH_CONFIG = window.SOCIAL_AUTH_CONFIG || {};
@@ -21,9 +22,9 @@ function setLoginMessage(message, color = 'red') {
 function redirectAfterLogin(user) {
     const userRole = user.role || 'USER';
     if (userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') {
-        window.location.href = window.pageUtils.resolveUrl('/pages/admin/dashboard.html');
+        window.location.href = '../admin/dashboard.html';
     } else {
-        window.location.href = window.pageUtils.resolveUrl('/pages/index.html');
+        window.location.href = '../../index.html';
     }
 }
 
@@ -58,7 +59,7 @@ function setupLogin() {
         errorMsg.innerHTML = '<span style="color: blue;">Dang kiem tra thong tin xac thuc...</span>';
 
         try {
-            const response = await window.apiClient.post('/api/vtd/public/auth/login', {
+            const response = await window.apiClient.post('/api/nat/public/auth/login', {
                 email: emailInput.value,
                 password: passwordInput.value
             });
@@ -113,7 +114,7 @@ function setupRegister() {
         msgBox.innerHTML = '<span style="color: blue;">Dang tao tai khoan...</span>';
 
         try {
-            const response = await window.apiClient.post('/api/vtd/public/auth/register', {
+            const response = await window.apiClient.post('/api/nat/public/auth/register', {
                 fullName: fullName,
                 email: email,
                 phoneNumber: phoneNumber,
@@ -122,7 +123,7 @@ function setupRegister() {
 
             msgBox.innerHTML = `<span style="color: green;">${response.message || 'Dang ky thanh cong! Dang chuyen huong...'}</span>`;
             setTimeout(() => {
-                window.location.href = window.pageUtils.resolveUrl('/pages/user/login.html');
+                window.location.href = './login.html';
             }, 1200);
         } catch (error) {
             msgBox.innerHTML = `<span style="color: red;">${error.message || 'Dang ky that bai. Vui long thu lai.'}</span>`;
@@ -173,7 +174,7 @@ function loginWithGoogle() {
             }
 
             try {
-                const response = await window.apiClient.post('/api/vtd/public/auth/social-login', {
+                const response = await window.apiClient.post('/api/nat/public/auth/social-login', {
                     provider: 'google',
                     accessToken: tokenResponse.access_token
                 });
@@ -221,7 +222,7 @@ function loginWithFacebook() {
 
         const accessToken = fbResponse.authResponse.accessToken;
         try {
-            const response = await window.apiClient.post('/api/vtd/public/auth/social-login', {
+            const response = await window.apiClient.post('/api/nat/public/auth/social-login', {
                 provider: 'facebook',
                 accessToken
             });
@@ -233,4 +234,32 @@ function loginWithFacebook() {
         }
     }, { scope: 'public_profile,email' });
 
+}
+
+// ==========================================
+// 4. LOGOUT (ĐĂNG XUẤT)
+// ==========================================
+function setupGlobalLogout() {
+    // Dùng Event Delegation để bắt sự kiện click ngay cả khi Header được load động
+    document.body.addEventListener('click', async (e) => {
+        // Tìm phần tử được click có id là 'btn-logout' hoặc class 'logout-btn'
+        const logoutBtn = e.target.closest('#btn-logout, .logout-btn');
+        
+        if (logoutBtn) {
+            e.preventDefault();
+            
+            // Tùy chọn: Gọi API backend để blacklist token nếu Backend có hỗ trợ chức năng này
+            // try { await window.apiClient.post('/api/nat/public/auth/logout', {}); } catch(err) {}
+
+            // 1. Dọn dẹp toàn bộ dữ liệu xác thực khỏi bộ nhớ cục bộ
+            localStorage.removeItem('token');
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('currentOrderId'); // Dọn dẹp luôn giỏ hàng nếu muốn
+            
+            alert('👋 Bạn đã đăng xuất thành công!');
+            
+            // 2. Chuyển hướng người dùng về trang chủ
+            window.location.href = '../../index.html';
+        }
+    });
 }

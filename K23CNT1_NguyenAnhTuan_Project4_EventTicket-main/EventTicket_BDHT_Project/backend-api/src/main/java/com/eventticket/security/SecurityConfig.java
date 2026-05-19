@@ -55,7 +55,7 @@ public class SecurityConfig {
                                 "/", "/index", "/home",
                                 "/api/auth/**",
                                 "/api/public/**",
-                                "/api/vtd/public/**",
+                                "/api/nat/public/**",
                                 "/css/**", "/js/**", "/images/**", "/assets/**")
                         .permitAll()
 

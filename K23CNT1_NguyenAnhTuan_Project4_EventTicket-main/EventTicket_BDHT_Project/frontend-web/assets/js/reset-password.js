@@ -16,9 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function attachEventListeners() {
-    // FIX: Nếu không ở trang quên mật khẩu (không có các form này) thì dừng lại, tránh lỗi sập JS trang khác
-    if (!emailForm || !otpForm || !passwordForm) return;
-
     emailForm.addEventListener('submit', handleEmailSubmit);
     otpForm.addEventListener('submit', handleOtpSubmit);
     passwordForm.addEventListener('submit', handlePasswordSubmit);
@@ -39,13 +36,10 @@ function attachEventListeners() {
         });
     });
 
-    const resendLink = document.getElementById('resend-otp-link');
-    if (resendLink) {
-        resendLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            resendOtp();
-        });
-    }
+    document.getElementById('resend-otp-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        resendOtp();
+    });
 }
 
 async function handleEmailSubmit(e) {
@@ -69,7 +63,7 @@ async function handleEmailSubmit(e) {
     button.textContent = 'Đang gửi...';
 
     try {
-        const response = await window.apiClient.post('/api/vtd/public/auth/forgot-password', { email });
+        const response = await window.apiClient.post('/api/nat/public/auth/forgot-password', { email });
 
         if (response && response.message) {
             resetState.email = email;
@@ -113,7 +107,7 @@ async function handleOtpSubmit(e) {
     button.textContent = 'Đang xác thực...';
 
     try {
-        const response = await window.apiClient.post('/api/vtd/public/auth/verify-otp', {
+        const response = await window.apiClient.post('/api/nat/public/auth/verify-otp', {
             email: resetState.email,
             otp,
         });
@@ -158,23 +152,18 @@ async function handlePasswordSubmit(e) {
     button.textContent = 'Đang đặt lại...';
 
     try {
-        const response = await window.apiClient.post('/api/vtd/public/auth/reset-password', {
+        const response = await window.apiClient.post('/api/nat/public/auth/reset-password', {
             email: resetState.email,
             newPassword,
         });
 
         if (response && response.message) {
             const successMsg = document.getElementById('success-message');
-            if (successMsg) {
-                successMsg.textContent = 'Mật khẩu đã được đặt lại thành công!';
-                successMsg.classList.add('show');
-            } else {
-                alert('Mật khẩu đã được đặt lại thành công!');
-            }
+            successMsg.textContent = 'Mật khẩu đã được đặt lại thành công!';
+            successMsg.classList.add('show');
 
             setTimeout(() => {
-                // FIX: Dùng pageUtils để tránh lỗi mất đường dẫn khi chạy Live Server
-                window.location.href = window.pageUtils ? window.pageUtils.resolveUrl('/pages/user/login.html') : '/pages/user/login.html';
+                window.location.href = 'login.html';
             }, 2000);
         } else {
             showError('password-error', response?.message || 'Không thể đặt lại mật khẩu');
@@ -191,14 +180,12 @@ async function handlePasswordSubmit(e) {
 
 async function resendOtp() {
     const button = document.getElementById('resend-otp-link');
-    if (!button) return;
-    
     button.style.pointerEvents = 'none';
     button.style.opacity = '0.5';
     button.textContent = 'Đang gửi lại...';
 
     try {
-        const response = await window.apiClient.post('/api/vtd/public/auth/forgot-password', {
+        const response = await window.apiClient.post('/api/nat/public/auth/forgot-password', {
             email: resetState.email,
         });
 
@@ -207,8 +194,7 @@ async function resendOtp() {
 
             // Clear OTP inputs
             document.querySelectorAll('.otp-input').forEach(input => input.value = '');
-            const firstInput = document.querySelectorAll('.otp-input')[0];
-            if (firstInput) firstInput.focus();
+            document.querySelectorAll('.otp-input')[0].focus();
 
             startOtpTimer();
             clearError('otp-error');
@@ -234,22 +220,17 @@ function startOtpTimer() {
         const minutes = Math.floor(resetState.timerSeconds / 60);
         const seconds = resetState.timerSeconds % 60;
         const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        
-        const timerValueEl = document.getElementById('timer-value');
-        if (timerValueEl) timerValueEl.textContent = display;
+        document.getElementById('timer-value').textContent = display;
 
         const timerEl = document.getElementById('otp-timer');
-        if (timerEl) {
-            if (resetState.timerSeconds <= 30) {
-                timerEl.classList.add('warning');
-            }
-            if (resetState.timerSeconds <= 0) {
-                stopOtpTimer();
-                timerEl.classList.add('expired');
-                const btnSubmit = document.getElementById('otp-form').querySelector('.btn-submit');
-                if (btnSubmit) btnSubmit.disabled = true;
-                showError('otp-error', 'OTP đã hết hạn. Vui lòng gửi lại.');
-            }
+        if (resetState.timerSeconds <= 30) {
+            timerEl.classList.add('warning');
+        }
+        if (resetState.timerSeconds <= 0) {
+            stopOtpTimer();
+            timerEl.classList.add('expired');
+            document.getElementById('otp-form').querySelector('.btn-submit').disabled = true;
+            showError('otp-error', 'OTP đã hết hạn. Vui lòng gửi lại.');
         }
     }, 1000);
 }
@@ -263,20 +244,18 @@ function stopOtpTimer() {
 
 function switchStep(from, to) {
     // Hide current step
-    emailForm.classList.remove('active');
-    otpForm.classList.remove('active');
-    passwordForm.classList.remove('active');
+    document.getElementById(`email-form`).classList.remove('active');
+    document.getElementById(`otp-form`).classList.remove('active');
+    document.getElementById(`password-form`).classList.remove('active');
 
     // Show target step
-    if (to === 1) emailForm.classList.add('active');
-    if (to === 2) otpForm.classList.add('active');
-    if (to === 3) passwordForm.classList.add('active');
+    if (to === 1) document.getElementById('email-form').classList.add('active');
+    if (to === 2) document.getElementById('otp-form').classList.add('active');
+    if (to === 3) document.getElementById('password-form').classList.add('active');
 
     // Update step indicator
     for (let i = 1; i <= 3; i++) {
         const stepEl = document.getElementById(`step-${i}`);
-        if (!stepEl) continue;
-
         if (i < to) {
             stepEl.classList.add('completed');
             stepEl.classList.remove('active');
