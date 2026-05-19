@@ -37,7 +37,7 @@ public class HomeController {
     /**
      * GUEST: API du lieu tong hop cho trang chu.
      */
-    @GetMapping("/api/nat/public/home")
+    @GetMapping("/api/vtd/public/home")
     @ResponseBody
     public ResponseEntity<HomePageResponse> getHomePageData() {
         List<G8_event> publishedEvents = eventService.getAllPublishedEvents();
@@ -70,7 +70,7 @@ public class HomeController {
     /**
      * GUEST: API danh muc su kien hien thi tren trang chu.
      */
-    @GetMapping("/api/nat/public/home/categories")
+    @GetMapping("/api/vtd/public/home/categories")
     @ResponseBody
     public ResponseEntity<List<String>> getHomeCategories() {
         List<String> categories = eventService.getAllPublishedEvents()

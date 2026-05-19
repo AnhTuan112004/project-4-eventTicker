@@ -1,7 +1,9 @@
 package com.eventticket.controller.user;
 
 import com.eventticket.entity.G8_users;
+import com.eventticket.security.JwtUtil;
 import com.eventticket.service.AuthService;
+import com.eventticket.service.SocialAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,15 +16,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.HashMap;
 import java.util.Map;
-import com.eventticket.security.JwtUtil;
 
 @RestController
-@RequestMapping("/api/nat/public/auth")
+@RequestMapping("/api/vtd/public/auth")
 public class AuthController {
 
     @Autowired
     private AuthService authService;
-    
+
+    @Autowired
+    private SocialAuthService socialAuthService;
+
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -50,15 +54,31 @@ public class AuthController {
     public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
         try {
             G8_users user = authService.loginUser(request.getEmail(), request.getPassword());
-            
-            // [FIX] Tạo JWT token khi đăng nhập thành công
-            String roleStr = user.getRole() != null ? user.getRole() : "USER";
-            String token = jwtUtil.generateToken(user.getEmail(), roleStr);
-
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Đăng nhập thành công");
             response.put("user", user);
-            response.put("token", token); // Trả về token cho Frontend
+            response.put("token", jwtUtil.generateToken(user.getEmail(), user.getRole()));
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Lỗi hệ thống: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @PostMapping("/social-login")
+    public ResponseEntity<Map<String, Object>> socialLogin(@RequestBody SocialLoginRequest request) {
+        try {
+            G8_users user = socialAuthService.loginWithProvider(request.getProvider(), request.getAccessToken());
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Đăng nhập " + request.getProvider() + " thành công");
+            response.put("user", user);
+            response.put("token", jwtUtil.generateToken(user.getEmail(), user.getRole()));
+
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -192,6 +212,30 @@ public class AuthController {
 
         public void setPassword(String password) {
             this.password = password;
+        }
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SocialLoginRequest {
+        private String provider;
+        private String accessToken;
+
+        public String getProvider() {
+            return provider;
+        }
+
+        public void setProvider(String provider) {
+            this.provider = provider;
+        }
+
+        public String getAccessToken() {
+            return accessToken;
+        }
+
+        public void setAccessToken(String accessToken) {
+            this.accessToken = accessToken;
         }
     }
 

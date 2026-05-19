@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function renderProfile() {
     const currentUser = getCurrentUser();
     if (!currentUser) {
-        window.location.href = '/pages/user/login.html';
+        window.location.href = window.pageUtils.resolveUrl('/pages/user/login.html');
         return;
     }
 
@@ -49,7 +49,7 @@ async function setupProfileEditor() {
                 profileMsg.innerText = 'Đang cập nhật...';
             }
             try {
-                const profile = await window.apiClient.put('/api/nat/member/profile', {
+                const profile = await window.apiClient.put('/api/vtd/member/profile', {
                     fullName: document.getElementById('updateFullName').value,
                     phoneNumber: document.getElementById('updatePhone').value
                 });
@@ -76,7 +76,7 @@ async function setupProfileEditor() {
                 passwordMsg.innerText = 'Đang đổi mật khẩu...';
             }
             try {
-                await window.apiClient.post('/api/nat/member/change-password', {
+                await window.apiClient.post('/api/vtd/member/change-password', {
                     oldPassword: document.getElementById('currentPassword').value,
                     newPassword: document.getElementById('newPassword').value
                 });
@@ -97,7 +97,7 @@ async function setupProfileEditor() {
 
 async function refreshUserProfile() {
     try {
-        const profile = await window.apiClient.get('/api/nat/member/profile');
+        const profile = await window.apiClient.get('/api/vtd/member/profile');
         if (profile) {
             localStorage.setItem('currentUser', JSON.stringify(profile));
             document.getElementById('profile-fullname').innerText = profile.fullName || profile.name || 'Chưa cập nhật';
@@ -116,7 +116,7 @@ async function loadOrders() {
     if (!container) return;
 
     try {
-        const orders = await window.apiClient.get('/api/nat/member/orders');
+        const orders = await window.apiClient.get('/api/vtd/member/orders');
         if (!orders || orders.length === 0) {
             container.innerHTML = '<div class="empty-state">Bạn chưa có đơn hàng nào.</div>';
             return;
@@ -146,7 +146,7 @@ async function loadTickets() {
     if (!container) return;
 
     try {
-        const tickets = await window.apiClient.get('/api/nat/member/my-tickets');
+        const tickets = await window.apiClient.get('/api/vtd/member/my-tickets');
         if (!tickets || tickets.length === 0) {
             container.innerHTML = '<div class="empty-state">Bạn chưa có vé nào được phát hành.</div>';
             return;

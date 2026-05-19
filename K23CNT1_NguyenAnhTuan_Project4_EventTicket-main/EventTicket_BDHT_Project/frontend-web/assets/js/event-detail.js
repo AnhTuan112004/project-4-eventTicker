@@ -25,7 +25,7 @@ async function loadEventDetails() {
     }
 
     try {
-        const event = await window.apiClient.get(`/api/nat/public/events/${eventId}`);
+        const event = await window.apiClient.get(`/api/vtd/public/events/${eventId}`);
         loadingMsg.style.display = 'none';
         eventContent.style.display = 'flex';
 
@@ -62,8 +62,8 @@ async function loadEventDetails() {
         }
 
         const ticketApi = window.apiClient.getToken() ?
-            `/api/nat/member/ticket-types/${eventId}/available` :
-            `/api/nat/public/ticket-types/${eventId}`;
+            `/api/vtd/member/ticket-types/${eventId}/available` :
+            `/api/vtd/public/ticket-types/${eventId}`;
         const ticketTypes = await window.apiClient.get(ticketApi);
         if (ticketTypesContainer) renderTicketTypes(ticketTypes, ticketTypesContainer);
 
@@ -81,7 +81,7 @@ async function loadEventDetails() {
 
 async function loadEventImages(eventId) {
     try {
-        const images = await window.apiClient.get(`/api/nat/public/events/${eventId}/images`);
+        const images = await window.apiClient.get(`/api/vtd/public/events/${eventId}/images`);
         return Array.isArray(images) && images.length > 0 ? images : [];
     } catch (error) {
         console.warn('Không lấy được ảnh sự kiện:', error);
@@ -172,7 +172,7 @@ function setupBookingForm() {
 
         try {
             const orderId = await getOrCreateOrder();
-            await window.apiClient.post(`/api/nat/member/orders/${orderId}/items`, {
+            await window.apiClient.post(`/api/vtd/member/orders/${orderId}/items`, {
                 ticketTypeId,
                 quantity: qty
             });
@@ -187,7 +187,7 @@ async function getOrCreateOrder() {
     let orderId = localStorage.getItem('currentOrderId');
     if (orderId) return orderId;
 
-    const data = await window.apiClient.post('/api/nat/member/orders', {});
+    const data = await window.apiClient.post('/api/vtd/member/orders', {});
     if (!data || !data.orderId) {
         throw new Error('Không thể tạo đơn hàng.');
     }

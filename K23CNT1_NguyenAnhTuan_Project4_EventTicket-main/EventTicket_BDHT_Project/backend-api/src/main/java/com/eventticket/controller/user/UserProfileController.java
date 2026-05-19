@@ -38,7 +38,7 @@ public class UserProfileController {
     /**
      * MEMBER: Xem thông tin hồ sơ cá nhân
      */
-    @GetMapping("/api/nat/member/profile")
+    @GetMapping("/api/vtd/member/profile")
     public ResponseEntity<G8_users> getUserProfile() {
         Integer userId = getCurrentUserId();
         if (userId == null) {
@@ -51,7 +51,7 @@ public class UserProfileController {
     /**
      * MEMBER: Cập nhật thông tin hồ sơ cá nhân
      */
-    @PutMapping("/api/nat/member/profile")
+    @PutMapping("/api/vtd/member/profile")
     public ResponseEntity<G8_users> updateUserProfile(@RequestBody UpdateProfileRequest request) {
         Integer userId = getCurrentUserId();
         if (userId == null) {
@@ -67,7 +67,7 @@ public class UserProfileController {
     /**
      * MEMBER: Đổi mật khẩu tài khoản
      */
-    @PostMapping("/api/nat/member/change-password")
+    @PostMapping("/api/vtd/member/change-password")
     public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request) {
         Integer userId = getCurrentUserId();
         if (userId == null) {

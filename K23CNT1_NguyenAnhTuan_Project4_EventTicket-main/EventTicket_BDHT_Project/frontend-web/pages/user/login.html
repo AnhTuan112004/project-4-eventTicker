@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Đăng Nhập - EventTicket</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="../../assets/css/style.css">
     <style>
         .auth-container { max-width: 400px; margin: 50px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .form-group { margin-bottom: 15px; }
@@ -37,10 +37,11 @@
                 <input type="password" id="password" required placeholder="Nhập mật khẩu">
             </div>
 
-            <div class="flex-between">
+             <div class="flex-between">
                 <label style="font-weight: normal;"><input type="checkbox"> Ghi nhớ đăng nhập</label>
-                <a href="/pages/user/reset-password.html" style="color: #007bff; text-decoration: none;">Quên mật khẩu?</a>
+                <a href="reset-password.html" style="color: #007bff; text-decoration: none;">Quên mật khẩu?</a>
             </div>
+
 
             <button type="submit" class="btn-main">Đăng Nhập</button>
         </form>
@@ -48,14 +49,23 @@
         <div class="divider">HOẶC</div>
 
         <button id="btn-google" class="btn-google">🌐 Đăng nhập bằng Google</button>
-        <button id="btn-facebook" class="btn-facebook">📘 Đăng nhập bằng Facebook</button>
+        <button id="btn-facebook" class="btn-facebook" type="button">📘 Đăng nhập bằng Facebook</button>
+    
+
 
         <p style="text-align: center; margin-top: 20px;">
-            Chưa có tài khoản? <a href="/pages/user/register.html" style="color: #007bff;">Đăng ký ngay</a>
+            Chưa có tài khoản? <a href="register.html" style="color: #007bff;">Đăng ký ngay</a>
         </p>
     </main>
 
-    <script src="/assets/js/core/api-client.js"></script>
-    <script src="/assets/js/auth.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js"></script>
+    <script>
+        window.SOCIAL_AUTH_CONFIG = {
+            googleClientId: '404310159595-htrj1gvm7nv4hsak6j64584tu350e1jd.apps.googleusercontent.com'
+        };
+    </script>
+    <script src="../../assets/js/core/api-client.js"></script>
+    <script src="../../assets/js/auth.js"></script>
 </body>
 </html>

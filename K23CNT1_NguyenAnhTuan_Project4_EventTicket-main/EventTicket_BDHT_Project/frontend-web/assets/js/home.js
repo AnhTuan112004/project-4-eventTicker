@@ -7,7 +7,7 @@ async function initializeHomePage() {
     await window.pageUtils.loadHeader();
     await loadHomePage();
     setupHomeSearch();
-    await loadFooter();
+    await window.pageUtils.loadFooter();
     await applyCategoryFromQuery();
 }
 
@@ -32,19 +32,6 @@ async function applyCategoryFromQuery() {
 // ==========================================
 // 1. CÁC HÀM XỬ LÝ HEADER & FOOTER
 // ==========================================
-async function loadFooter() {
-    try {
-        const response = await fetch('/components/footer.html');
-        let footerHTML = await response.text();
-        const footerContainer = document.getElementById('footer-container');
-        if (footerContainer) {
-            footerContainer.innerHTML = footerHTML;
-        }
-    } catch (error) {
-        console.error('Lỗi khi load footer:', error);
-    }
-}
-
 function setupHeaderLogic() {
     const token = window.apiClient ? window.apiClient.getToken() : null;
     const storedUser = localStorage.getItem('currentUser');
@@ -60,7 +47,7 @@ function setupHeaderLogic() {
             btnLogout.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (window.apiClient) window.apiClient.clearToken();
-                window.location.href = '/index.html';
+                window.location.href = window.pageUtils.resolveUrl('/pages/index.html');
             });
         }
     } else {
@@ -82,7 +69,7 @@ async function loadHomePage() {
 
     try {
         if (!window.apiClient) throw new Error('API Client không khả dụng');
-        const data = await window.apiClient.get('/api/nat/public/home');
+        const data = await window.apiClient.get('/api/vtd/public/home');
         if (categoryFilters) renderCategoryFilters(data.categories || [], categoryFilters);
         if (eventList) renderEventCards(data.featuredEvents || [], eventList, 'Không có sự kiện nổi bật.');
         if (latestList) renderEventCards(data.latestEvents || [], latestList, 'Không có sự kiện mới nhất.');
@@ -150,7 +137,7 @@ async function searchEvents(keyword) {
 
     try {
         if (!window.apiClient) throw new Error('API Client không khả dụng');
-        const events = await window.apiClient.get(`/api/nat/public/events/search?keyword=${encodeURIComponent(keyword)}`);
+        const events = await window.apiClient.get(`/api/vtd/public/events/search?keyword=${encodeURIComponent(keyword)}`);
         renderEventCards(events, eventList, 'Không tìm thấy sự kiện phù hợp.');
     } catch (error) {
         console.error('Error searching events:', error);
@@ -165,7 +152,7 @@ async function loadEventsByCategory(category) {
 
     try {
         if (!window.apiClient) throw new Error('API Client không khả dụng');
-        const events = await window.apiClient.get(`/api/nat/public/events/category/${encodeURIComponent(category)}`);
+        const events = await window.apiClient.get(`/api/vtd/public/events/category/${encodeURIComponent(category)}`);
         renderEventCards(events, eventList, `Không có sự kiện trong danh mục ${category}.`);
     } catch (error) {
         console.error('Error loading category events:', error);
@@ -196,7 +183,7 @@ function renderEventCards(events, container, emptyMessage) {
         const imgUrl = event.bannerImageUrl || event.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&auto=format&fit=crop';
 
         return `
-            <a href="/pages/user/event-detail.html?id=${eventId}" class="event-card">
+            <a href="${window.pageUtils.resolveUrl(`/pages/user/event-detail.html?id=${eventId}`)}" class="event-card">
                 <img src="${imgUrl}" alt="${title}" class="event-img">
                 <div class="event-info">
                     <div class="event-meta">
@@ -244,7 +231,7 @@ async function loadEvents() {
     
     try {
         if (!window.apiClient) throw new Error("API Client không khả dụng");
-        const events = await window.apiClient.get('/api/nat/public/events');
+        const events = await window.apiClient.get('/api/vtd/public/events');
         displayEvents(events, eventsContainer);
     } catch (error) {
         console.error('Error loading events:', error);
@@ -273,7 +260,7 @@ function displayEvents(events, container) {
         const imgUrl = event.bannerImageUrl || event.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&auto=format&fit=crop';
 
         return `
-            <a href="/pages/user/event-detail.html?id=${eventId}" class="event-card">
+            <a href="${window.pageUtils.resolveUrl(`/pages/user/event-detail.html?id=${eventId}`)}" class="event-card">
                 <img src="${imgUrl}" alt="${title}" class="event-img">
                 <div class="event-info">
                     <div class="event-meta">

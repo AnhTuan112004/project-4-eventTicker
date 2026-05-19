@@ -23,7 +23,7 @@ function bindCartActions() {
     const paymentBtn = document.getElementById('btn-go-payment');
     if (paymentBtn) {
         paymentBtn.addEventListener('click', () => {
-            window.location.href = '/pages/user/payment.html';
+            window.location.href = window.pageUtils.resolveUrl('/pages/user/payment.html');
         });
     }
 }
@@ -44,7 +44,7 @@ async function loadCart() {
 
     if (!orderId) {
         cartDetails.style.display = 'none';
-        cartMessage.innerHTML = 'Bạn chưa có giỏ hàng đang xử lý. <a href="/index.html" style="color:#007bff;">Quay lại trang chủ</a> để chọn vé.';
+        cartMessage.innerHTML = `Bạn chưa có giỏ hàng đang xử lý. <a href="${window.pageUtils.resolveUrl('/pages/index.html')}" style="color:#007bff;">Quay lại trang chủ</a> để chọn vé.`;
         return;
     }
 
@@ -52,8 +52,8 @@ async function loadCart() {
     cartDetails.style.display = 'none';
 
     try {
-        const order = await window.apiClient.get(`/api/nat/member/orders/${orderId}`);
-        const items = await window.apiClient.get(`/api/nat/member/orders/${orderId}/items`);
+        const order = await window.apiClient.get(`/api/vtd/member/orders/${orderId}`);
+        const items = await window.apiClient.get(`/api/vtd/member/orders/${orderId}/items`);
 
         if (!order || !items) {
             throw new Error('Không thể tải dữ liệu đơn hàng.');
@@ -61,7 +61,7 @@ async function loadCart() {
 
         if (!items.length) {
             cartDetails.style.display = 'none';
-            cartMessage.innerHTML = 'Giỏ hàng của bạn hiện trống. <a href="/index.html" style="color:#007bff;">Tiếp tục mua sắm</a>.';
+            cartMessage.innerHTML = `Giỏ hàng của bạn hiện trống. <a href="${window.pageUtils.resolveUrl('/pages/index.html')}" style="color:#007bff;">Tiếp tục mua sắm</a>.`;
             return;
         }
 
@@ -124,7 +124,7 @@ async function loadCart() {
 
 async function updateCartItem(orderId, itemId, quantity) {
     try {
-        await window.apiClient.put(`/api/nat/member/orders/${orderId}/items/${itemId}`, { quantity });
+        await window.apiClient.put(`/api/vtd/member/orders/${orderId}/items/${itemId}`, { quantity });
         await loadCart();
     } catch (error) {
         alert('Không thể cập nhật số lượng: ' + error.message);
@@ -133,7 +133,7 @@ async function updateCartItem(orderId, itemId, quantity) {
 
 async function removeCartItem(orderId, itemId) {
     try {
-        await window.apiClient.delete(`/api/nat/member/orders/${orderId}/items/${itemId}`);
+        await window.apiClient.delete(`/api/vtd/member/orders/${orderId}/items/${itemId}`);
         await loadCart();
     } catch (error) {
         alert('Không thể xóa mục: ' + error.message);
@@ -147,7 +147,7 @@ async function confirmCurrentOrder() {
         return;
     }
     try {
-        const order = await window.apiClient.post(`/api/nat/member/orders/${orderId}/confirm`, {});
+        const order = await window.apiClient.post(`/api/vtd/member/orders/${orderId}/confirm`, {});
         localStorage.setItem('currentOrderId', orderId);
         alert('Đơn hàng đã được xác nhận. Bạn có thể tiếp tục thanh toán.');
         await loadCart();

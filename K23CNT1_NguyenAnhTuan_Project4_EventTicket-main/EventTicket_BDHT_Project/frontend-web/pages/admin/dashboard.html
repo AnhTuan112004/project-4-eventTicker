@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div id="header-placeholder"></div>
+    <div id="header-container"></div>
     
     <div style="display:flex;">
         <aside style="width:250px; background:white; height:100vh; padding:1rem; box-shadow:2px 0 5px rgba(0,0,0,0.1);">
@@ -38,9 +38,9 @@
         </main>
     </div>
 
+    <script src="../../assets/js/core/api-client.js"></script>
     <script>
-        // Load header
-        document.getElementById('header-placeholder').innerHTML = fetch('../../components/header.html').then(r => r.text());
+        window.pageUtils.loadHeader();
         
         // TODO: Load stats from /api/admin/stats/dashboard
         document.getElementById('totalRevenue').textContent = 'Loading...';
@@ -57,4 +57,3 @@
     </script>
 </body>
 </html>
-

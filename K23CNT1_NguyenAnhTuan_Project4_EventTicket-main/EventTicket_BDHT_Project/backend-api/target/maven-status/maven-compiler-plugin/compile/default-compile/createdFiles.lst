@@ -1,8 +1,8 @@
 com\eventticket\controller\user\UserProfileController$UpdateProfileRequest.class
-com\eventticket\service\AdminDashboardService$RevenueStats.class
 com\eventticket\service\EventService.class
 com\eventticket\security\JwtAuthenticationFilter.class
 com\eventticket\repository\VenueRepository.class
+com\eventticket\service\SocialAuthService$SocialProfile.class
 com\eventticket\security\JwtUtil.class
 com\eventticket\entity\G8_review.class
 com\eventticket\repository\OrderRepository.class
@@ -18,6 +18,8 @@ com\eventticket\entity\G8_ticketType.class
 com\eventticket\controller\user\TicketController$TicketTypeDTO.class
 com\eventticket\controller\user\AiChatController$SendMessageRequest.class
 com\eventticket\controller\user\AuthController$ResetPasswordRequest.class
+com\eventticket\service\SocialAuthService.class
+com\eventticket\controller\user\AuthController$SocialLoginRequest.class
 com\eventticket\service\AiChatService.class
 com\eventticket\controller\user\PromotionController$PromotionResponse.class
 com\eventticket\service\EventImageService.class
@@ -34,8 +36,6 @@ com\eventticket\controller\user\PaymentController$CreatePaymentRequest.class
 com\eventticket\controller\user\PaymentController.class
 com\eventticket\service\OtpService.class
 com\eventticket\service\PaymentService.class
-com\eventticket\service\AdminDashboardService$TicketSalesStats.class
-com\eventticket\service\AdminDashboardService.class
 com\eventticket\EventTicketApplication.class
 com\eventticket\controller\user\UserProfileController$ChangePasswordRequest.class
 com\eventticket\entity\G8_order_item.class
@@ -46,7 +46,6 @@ com\eventticket\entity\G8_payment.class
 com\eventticket\controller\user\EventController.class
 com\eventticket\service\OrderService.class
 com\eventticket\controller\user\AuthController$VerifyOtpRequest.class
-com\eventticket\service\AdminDashboardService$DashboardStats.class
 com\eventticket\config\CorsConfig.class
 com\eventticket\service\VenueService.class
 com\eventticket\repository\TicketTypeRepository.class

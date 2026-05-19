@@ -12,12 +12,12 @@ async function loadPaymentData() {
     if (!paymentInfo || !paymentForm) return;
 
     if (!orderId) {
-        paymentInfo.innerHTML = 'Không tìm thấy đơn hàng thanh toán. Vui lòng quay lại <a href="/pages/user/cart.html" style="color:#007bff;">Giỏ hàng</a> và tạo đơn hàng mới.';
+        paymentInfo.innerHTML = `Không tìm thấy đơn hàng thanh toán. Vui lòng quay lại <a href="${window.pageUtils.resolveUrl('/pages/user/cart.html')}" style="color:#007bff;">Giỏ hàng</a> và tạo đơn hàng mới.`;
         return;
     }
 
     try {
-        const order = await window.apiClient.get(`/api/nat/member/orders/${orderId}`);
+        const order = await window.apiClient.get(`/api/vtd/member/orders/${orderId}`);
         paymentInfo.innerHTML = `
             <p><strong>Đơn hàng #${order.orderId || order.id || orderId}</strong></p>
             <p>Trạng thái: ${order.status || order.orderStatus || 'PENDING'}</p>
@@ -30,7 +30,7 @@ async function loadPaymentData() {
             paymentResult.innerText = 'Đang tạo thanh toán...';
             try {
                 const method = document.getElementById('payment-method').value;
-                const payment = await window.apiClient.post('/api/nat/member/payments', {
+                const payment = await window.apiClient.post('/api/vtd/member/payments', {
                     orderId: Number(orderId),
                     paymentMethod: method
                 });

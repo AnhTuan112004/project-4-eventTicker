@@ -43,7 +43,7 @@ public class AiChatController {
     /**
      * GUEST/MEMBER: Tạo session code mới
      */
-    @GetMapping("/api/nat/public/ai-chat/generate-session")
+    @GetMapping("/api/vtd/public/ai-chat/generate-session")
     public ResponseEntity<Map<String, String>> generateSession() {
         String sessionCode = aiChatService.generateSessionCode();
         Map<String, String> response = new HashMap<>();
@@ -55,7 +55,7 @@ public class AiChatController {
      * GUEST/MEMBER: Gửi tin nhắn đến AI
      * Session code có thể là guest session hoặc member session
      */
-    @PostMapping("/api/nat/public/ai-chat/message")
+    @PostMapping("/api/vtd/public/ai-chat/message")
     public ResponseEntity<ChatMessageResponse> sendMessage(@RequestBody SendMessageRequest request) {
         Integer userId = getCurrentUserId();
 
@@ -83,7 +83,7 @@ public class AiChatController {
     /**
      * MEMBER: Lấy lịch sử chat theo session code
      */
-    @GetMapping("/api/nat/member/ai-chat/history/{sessionCode}")
+    @GetMapping("/api/vtd/member/ai-chat/history/{sessionCode}")
     public ResponseEntity<List<G8_AiChatLog>> getChatHistory(@PathVariable String sessionCode) {
         List<G8_AiChatLog> history = aiChatService.getChatHistory(sessionCode);
         return ResponseEntity.ok(history);
@@ -92,7 +92,7 @@ public class AiChatController {
     /**
      * MEMBER: Lấy lịch sử chat của user hiện tại
      */
-    @GetMapping("/api/nat/member/ai-chat/my-history")
+    @GetMapping("/api/vtd/member/ai-chat/my-history")
     public ResponseEntity<List<G8_AiChatLog>> getUserChatHistory() {
         Integer userId = getCurrentUserId();
         if (userId == null) {
@@ -105,7 +105,7 @@ public class AiChatController {
     /**
      * MEMBER: Lấy danh sách các session của user
      */
-    @GetMapping("/api/nat/member/ai-chat/sessions")
+    @GetMapping("/api/vtd/member/ai-chat/sessions")
     public ResponseEntity<List<String>> getUserSessions() {
         Integer userId = getCurrentUserId();
         if (userId == null) {

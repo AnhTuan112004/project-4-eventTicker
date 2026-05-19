@@ -13,8 +13,17 @@
 
     <main>
         <!-- Banner Section -->
-        <section class="banner">
-            <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=1200&auto=format&fit=crop" alt="Event Banner">
+        <section class="banner" id="home-banner">
+            <div class="banner-slides" id="banner-slides">
+                <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=1200&auto=format&fit=crop" alt="Event Banner 1">
+                <img src="https://images.unsplash.com/photo-1470229722913-7c092fb6224d?q=80&w=1200&auto=format&fit=crop" alt="Event Banner 2">
+                <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1200&auto=format&fit=crop" alt="Event Banner 3">
+            </div>
+            <div class="banner-dots" id="banner-dots">
+                <div class="banner-dot active" data-index="0"></div>
+                <div class="banner-dot" data-index="1"></div>
+                <div class="banner-dot" data-index="2"></div>
+            </div>
         </section>
 
         <!-- Feature Section -->
@@ -119,14 +128,14 @@
     <style>
         .chat-panel-popup {
             position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 350px;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            padding: 15px;
-            background: #fff;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            bottom: 6rem;
+            right: 2rem;
+            width: 380px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            background: var(--surface-color);
+            box-shadow: var(--shadow-lg);
             z-index: 1000;
             display: flex;
             flex-direction: column;
@@ -135,43 +144,51 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
         }
-        .chat-panel-popup .chat-header h3 { margin: 0; font-size: 16px; color: #333; }
+        .chat-panel-popup .chat-header h3 { margin: 0; font-size: 1.1rem; color: var(--text-color); font-weight: 600; }
         .chat-panel-popup .chat-box {
-            height: 280px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 12px;
+            height: 320px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
             overflow-y: auto;
-            background: #f9f9f9;
-            margin-bottom: 12px;
-            font-size: 14px;
+            background: var(--bg-color);
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
         }
-        .chat-panel-popup .chat-message { margin-bottom: 12px; }
-        .chat-panel-popup .chat-message.user { text-align: right; }
+        .chat-panel-popup .chat-message { margin-bottom: 1rem; display: flex; flex-direction: column; }
+        .chat-panel-popup .chat-message.user { align-items: flex-end; }
+        .chat-panel-popup .chat-message.ai { align-items: flex-start; }
         .chat-panel-popup .chat-message .message-label {
-            display: inline-block; background: #007bff; color: white; padding: 8px 12px; border-radius: 15px; max-width: 85%; word-wrap: break-word; text-align: left;
+            display: inline-block; background: var(--primary-color); color: white; padding: 0.75rem 1rem; border-radius: 1rem 1rem 0 1rem; max-width: 85%; word-wrap: break-word; text-align: left; box-shadow: var(--shadow-sm);
         }
-        .chat-panel-popup .chat-message.ai .message-label { background: #6c757d; }
-        .chat-panel-popup .chat-input-row { display: flex; gap: 8px; }
-        .chat-panel-popup .chat-input-row input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc; outline: none; }
-        .chat-panel-popup .chat-input-row button { padding: 10px 15px; border: none; border-radius: 6px; background: #28a745; color: #fff; cursor: pointer; font-weight: bold; }
-        .home-search-panel { display:flex; flex-wrap:wrap; justify-content:space-between; gap:16px; align-items:flex-end; margin: 36px 0 16px; }
-        .home-search-panel .search-row { display:flex; gap:12px; flex:1; min-width:260px; }
-        .home-search-panel input { flex:1; padding: 12px 14px; border-radius: 8px; border:1px solid #ccc; }
-        .home-search-panel button { padding: 12px 22px; border:none; border-radius:8px; background:#007bff; color:white; cursor:pointer; }
-        .category-filters { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
-        .category-chip { padding: 8px 14px; border-radius: 999px; background:#f1f1f1; border:1px solid #ddd; cursor:pointer; transition: all .2s ease; }
-        .category-chip.active, .category-chip:hover { background:#007bff; color:#fff; border-color:#007bff; }
-        .feature-section { padding: 40px 0; }
-        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-top: 20px; }
-        .feature-card { display: block; padding: 24px 20px; border-radius: 16px; border: 1px solid rgba(0,0,0,0.08); background: #fff; box-shadow: 0 12px 30px rgba(0,0,0,0.06); text-decoration: none; color: #222; transition: transform .2s ease, border-color .2s ease; }
-        .feature-card:hover { transform: translateY(-4px); border-color: #007bff; }
-        .feature-card h3 { margin: 0 0 12px; font-size: 18px; }
-        .feature-card p { margin: 0; color: #555; line-height: 1.6; }
+        .chat-panel-popup .chat-message.ai .message-label { background: var(--surface-color); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 1rem 1rem 1rem 0; }
+        .chat-panel-popup .chat-input-row { display: flex; gap: 0.5rem; }
+        .chat-panel-popup .chat-input-row input { flex: 1; padding: 0.75rem 1rem; border-radius: 9999px; border: 1px solid var(--border-color); outline: none; font-size: 0.95rem; transition: var(--transition); background: var(--bg-color); }
+        .chat-panel-popup .chat-input-row input:focus { background: var(--surface-color); border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .chat-panel-popup .chat-input-row button { padding: 0.75rem 1.25rem; border: none; border-radius: 9999px; background: var(--primary-color); color: #fff; cursor: pointer; font-weight: 600; transition: var(--transition); }
+        .chat-panel-popup .chat-input-row button:hover { background: var(--primary-hover); }
+        
+        .home-search-panel { display:flex; flex-wrap:wrap; justify-content:space-between; gap:1rem; align-items:flex-end; margin: 3rem 0 1.5rem; }
+        .home-search-panel .search-row { display:flex; gap:0.75rem; flex:1; min-width:300px; }
+        .home-search-panel input { flex:1; padding: 0.875rem 1.25rem; border-radius: 9999px; border:1px solid var(--border-color); font-size: 0.95rem; outline:none; transition: var(--transition); background: var(--surface-color); }
+        .home-search-panel input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .home-search-panel button { padding: 0.875rem 1.75rem; border:none; border-radius:9999px; background:var(--primary-color); color:white; cursor:pointer; font-weight: 600; transition: var(--transition); }
+        .home-search-panel button:hover { background: var(--primary-hover); }
+        
+        .category-filters { display:flex; flex-wrap:wrap; gap:0.75rem; margin-bottom:2rem; }
+        .category-chip { padding: 0.5rem 1.25rem; border-radius: 9999px; background:var(--surface-color); border:1px solid var(--border-color); cursor:pointer; transition: var(--transition); font-size: 0.9rem; font-weight: 500; color: var(--text-color); box-shadow: var(--shadow-sm); }
+        .category-chip.active, .category-chip:hover { background:var(--primary-color); color:#fff; border-color:var(--primary-color); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+        
+        .feature-section { padding: 4rem 0; }
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+        .feature-card { display: block; padding: 1.75rem 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color); background: var(--surface-color); box-shadow: var(--shadow-sm); text-decoration: none; color: var(--text-color); transition: var(--transition); }
+        .feature-card:hover { transform: translateY(-4px); border-color: transparent; box-shadow: var(--shadow-lg); }
+        .feature-card h3 { margin: 0 0 0.75rem; font-size: 1.1rem; font-weight: 600; color: var(--primary-color); }
+        .feature-card p { margin: 0; color: var(--text-light); line-height: 1.6; font-size: 0.95rem; }
     </style>
 
     <script>

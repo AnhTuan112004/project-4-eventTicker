@@ -22,7 +22,7 @@ public class PromotionController {
     /**
      * GUEST/MEMBER: Nhập mã khuyến mãi để áp dụng
      */
-    @PostMapping("/api/nat/public/promotions/validate")
+    @PostMapping("/api/vtd/public/promotions/validate")
     public ResponseEntity<PromotionResponse> validatePromotion(@RequestBody ValidatePromotionRequest request) {
         try {
             G8_promotion promotion = promotionService.validateAndApplyPromotion(request.getCode());
@@ -43,7 +43,7 @@ public class PromotionController {
     /**
      * GUEST/MEMBER: Lấy thông tin chi tiết một mã khuyến mãi
      */
-    @GetMapping("/api/nat/public/promotions/{code}")
+    @GetMapping("/api/vtd/public/promotions/{code}")
     public ResponseEntity<G8_promotion> getPromotionByCode(@PathVariable String code) {
         G8_promotion promotion = promotionService.validateAndApplyPromotion(code);
         return ResponseEntity.ok(promotion);
@@ -52,7 +52,7 @@ public class PromotionController {
     /**
      * GUEST/MEMBER: Tính giá sau khi áp dụng khuyến mãi
      */
-    @PostMapping("/api/nat/public/promotions/calculate-discount")
+    @PostMapping("/api/vtd/public/promotions/calculate-discount")
     public ResponseEntity<Map<String, Object>> calculateDiscount(@RequestBody CalculateDiscountRequest request) {
         try {
             G8_promotion promotion = promotionService.validateAndApplyPromotion(request.getPromotionCode());

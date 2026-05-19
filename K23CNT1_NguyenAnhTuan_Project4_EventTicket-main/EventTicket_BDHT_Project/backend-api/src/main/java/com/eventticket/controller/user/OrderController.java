@@ -42,7 +42,7 @@ public class OrderController {
     /**
      * MEMBER: Tạo đơn hàng mới (tạo giỏ hàng)
      */
-    @PostMapping("/api/nat/member/orders")
+    @PostMapping("/api/vtd/member/orders")
     public ResponseEntity<G8_order> createOrder() {
         Integer userId = getCurrentUserId();
         if (userId == null) {
@@ -55,7 +55,7 @@ public class OrderController {
     /**
      * MEMBER: Thêm loại vé vào giỏ hàng
      */
-    @PostMapping("/api/nat/member/orders/{orderId}/items")
+    @PostMapping("/api/vtd/member/orders/{orderId}/items")
     public ResponseEntity<G8_order_item> addTicketTypeToOrder(
             @PathVariable Integer orderId,
             @RequestBody AddTicketRequest request) {
@@ -69,7 +69,7 @@ public class OrderController {
     /**
      * MEMBER: Xem chi tiết đơn hàng
      */
-    @GetMapping("/api/nat/member/orders/{orderId}")
+    @GetMapping("/api/vtd/member/orders/{orderId}")
     public ResponseEntity<G8_order> getOrderDetails(@PathVariable Integer orderId) {
         G8_order order = orderService.getOrderDetails(orderId);
         return ResponseEntity.ok(order);
@@ -78,7 +78,7 @@ public class OrderController {
     /**
      * MEMBER: Xem lịch sử đơn hàng của người dùng
      */
-    @GetMapping("/api/nat/member/orders")
+    @GetMapping("/api/vtd/member/orders")
     public ResponseEntity<List<G8_order>> getUserOrders() {
         Integer userId = getCurrentUserId();
         if (userId == null) {
@@ -91,7 +91,7 @@ public class OrderController {
     /**
      * MEMBER: Lấy các mục trong giỏ hàng
      */
-    @GetMapping("/api/nat/member/orders/{orderId}/items")
+    @GetMapping("/api/vtd/member/orders/{orderId}/items")
     public ResponseEntity<List<G8_order_item>> getOrderItems(@PathVariable Integer orderId) {
         List<G8_order_item> items = orderService.getOrderItems(orderId);
         return ResponseEntity.ok(items);
@@ -100,7 +100,7 @@ public class OrderController {
     /**
      * MEMBER: Xóa một mục khỏi giỏ hàng
      */
-    @DeleteMapping("/api/nat/member/orders/{orderId}/items/{orderItemId}")
+    @DeleteMapping("/api/vtd/member/orders/{orderId}/items/{orderItemId}")
     public ResponseEntity<Void> removeOrderItem(
             @PathVariable Integer orderId,
             @PathVariable Integer orderItemId) {
@@ -111,7 +111,7 @@ public class OrderController {
     /**
      * MEMBER: Cập nhật số lượng vé trong giỏ hàng
      */
-    @PutMapping("/api/nat/member/orders/{orderId}/items/{orderItemId}")
+    @PutMapping("/api/vtd/member/orders/{orderId}/items/{orderItemId}")
     public ResponseEntity<G8_order_item> updateOrderItem(
             @PathVariable Integer orderId,
             @PathVariable Integer orderItemId,
@@ -123,7 +123,7 @@ public class OrderController {
     /**
      * MEMBER: Xác nhận đơn hàng (chuyển từ PENDING sang CONFIRMED)
      */
-    @PostMapping("/api/nat/member/orders/{orderId}/confirm")
+    @PostMapping("/api/vtd/member/orders/{orderId}/confirm")
     public ResponseEntity<G8_order> confirmOrder(@PathVariable Integer orderId) {
         G8_order order = orderService.confirmOrder(orderId);
         return ResponseEntity.ok(order);

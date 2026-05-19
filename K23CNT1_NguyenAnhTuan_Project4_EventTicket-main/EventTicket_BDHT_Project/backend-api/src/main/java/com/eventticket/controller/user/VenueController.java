@@ -19,7 +19,7 @@ public class VenueController {
     /**
      * GUEST: Xem chi tiết địa điểm tổ chức (bản đồ, địa chỉ, sức chứa)
      */
-    @GetMapping("/api/nat/public/venues/{venueId}")
+    @GetMapping("/api/vtd/public/venues/{venueId}")
     public ResponseEntity<G8_venue> getVenueDetails(@PathVariable Integer venueId) {
         G8_venue venue = venueService.getVenueDetails(venueId);
         return ResponseEntity.ok(venue);
@@ -28,7 +28,7 @@ public class VenueController {
     /**
      * GUEST: Tìm kiếm địa điểm theo tên hoặc địa chỉ
      */
-    @GetMapping("/api/nat/public/venues/search")
+    @GetMapping("/api/vtd/public/venues/search")
     public ResponseEntity<List<G8_venue>> searchVenues(@RequestParam String keyword) {
         List<G8_venue> venues = venueService.searchVenues(keyword);
         return ResponseEntity.ok(venues);
@@ -37,7 +37,7 @@ public class VenueController {
     /**
      * GUEST: Lọc địa điểm theo sức chứa tối thiểu
      */
-    @GetMapping("/api/nat/public/venues/by-capacity")
+    @GetMapping("/api/vtd/public/venues/by-capacity")
     public ResponseEntity<List<G8_venue>> findVenuesByCapacity(@RequestParam Integer minCapacity) {
         List<G8_venue> venues = venueService.findVenuesByMinCapacity(minCapacity);
         return ResponseEntity.ok(venues);

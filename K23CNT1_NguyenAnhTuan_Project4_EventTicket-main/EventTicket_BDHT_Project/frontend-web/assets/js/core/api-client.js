@@ -3,6 +3,33 @@
 
 const API_BASE_URL = 'http://localhost:8080';
 
+function getFrontendBasePath() {
+    const path = window.location.pathname.replace(/\\/g, '/');
+    const marker = '/frontend-web/';
+    const markerIndex = path.indexOf(marker);
+
+    if (markerIndex !== -1) {
+        return path.substring(0, markerIndex + marker.length - 1);
+    }
+
+    return '';
+}
+
+function resolveAppUrl(path) {
+    if (!path || path.startsWith('http') || path.startsWith('javascript:') || path.startsWith('#')) {
+        return path;
+    }
+
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${getFrontendBasePath()}${cleanPath}`;
+}
+
+function rewriteInternalUrls(html) {
+    return html.replace(/\b(href|src)="\/(?!\/)([^"]*)"/g, (match, attr, path) => {
+        return `${attr}="${resolveAppUrl(`/${path}`)}"`;
+    });
+}
+
 class ApiClient {
     // Lấy JWT token từ localStorage
     getToken() {
@@ -44,7 +71,7 @@ class ApiClient {
             // Nếu lỗi 401 (chưa đăng nhập hoặc token hết hạn)
             if (response.status === 401) {
                 this.clearToken();
-                window.location.href = '/pages/user/login.html'; 
+                window.location.href = window.pageUtils.resolveUrl('/pages/user/login.html');
                 return null;
             }
 
@@ -104,12 +131,14 @@ class ApiClient {
 window.apiClient = new ApiClient();
 
 window.pageUtils = {
+    getBasePath: getFrontendBasePath,
+    resolveUrl: resolveAppUrl,
+    rewriteInternalUrls,
+
     async loadHeader() {
         try {
-            const response = await fetch('/components/header.html');
-            let headerHTML = await response.text();
-            headerHTML = headerHTML.replace(/href="index.html"/g, 'href="/index.html"');
-            headerHTML = headerHTML.replace(/href="pages\/user\//g, 'href="/pages/user/');
+            const response = await fetch(this.resolveUrl('/components/header.html'));
+            let headerHTML = rewriteInternalUrls(await response.text());
             const headerContainer = document.getElementById('header-container');
             if (headerContainer) {
                 headerContainer.innerHTML = headerHTML;
@@ -120,19 +149,21 @@ window.pageUtils = {
         }
     },
 
+ 
     async loadFooter() {
-        try {
-            const response = await fetch('/components/footer.html');
-            const footerHTML = await response.text();
-            const footerContainer = document.getElementById('footer-container');
-            if (footerContainer) {
-                footerContainer.innerHTML = footerHTML;
+            try {
+                const response = await fetch(this.resolveUrl('/components/footer.html'));
+                let footerHTML = rewriteInternalUrls(await response.text());
+                
+                const footerContainer = document.getElementById('footer-container');
+                if (footerContainer) {
+                    footerContainer.innerHTML = footerHTML;
+                }
+            } catch (error) {
+                console.error('Lỗi khi load footer:', error);
             }
-        } catch (error) {
-            console.error('Lỗi khi load footer:', error);
-        }
-    },
-
+        },
+        
     setupAuthMenu() {
         const token = window.apiClient ? window.apiClient.getToken() : null;
         const storedUser = localStorage.getItem('currentUser');
@@ -149,7 +180,7 @@ window.pageUtils = {
                 btnLogout.addEventListener('click', (e) => {
                     e.preventDefault();
                     window.apiClient.clearToken();
-                    window.location.href = '/index.html';
+                    window.location.href = window.pageUtils.resolveUrl('/pages/index.html');
                 });
             }
         } else {
