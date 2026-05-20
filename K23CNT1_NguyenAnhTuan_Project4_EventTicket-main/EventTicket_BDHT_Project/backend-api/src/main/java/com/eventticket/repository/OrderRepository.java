@@ -12,7 +12,6 @@ import java.util.List;
 
 @Repository
 public interface OrderRepository extends JpaRepository<G8_order, Integer> {
-
     List<G8_order> findByUser_UserId(Integer userId);
 
     @Query("SELECT o FROM G8_order o WHERE o.user.userId = :userId AND o.status = :status")

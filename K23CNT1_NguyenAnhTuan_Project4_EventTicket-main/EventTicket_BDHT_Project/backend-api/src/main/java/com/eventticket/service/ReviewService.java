@@ -48,7 +48,7 @@ public class ReviewService {
         }
 
         // Nếu tồn tại review của user cho event này => update
-        return reviewRepository.findByUserIdAndEventId(user.getUserId(), event.getEventId())
+        return reviewRepository.findByUserAndEvent(user, event)
                 .map(existing -> {
                     existing.setRating(rating);
                     existing.setComment(comment);

@@ -135,6 +135,14 @@ class ApiClient {
     async delete(endpoint) {
         return this.request(endpoint, { method: 'DELETE' });
     }
+
+    // PATCH request
+    async patch(endpoint, data) {
+        return this.request(endpoint, {
+            method: 'PATCH',
+            body: data ? JSON.stringify(data) : undefined
+        });
+    }
 }
 
 // Khởi tạo biến toàn cục để xài ở mọi file HTML

@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -16,12 +18,6 @@ public class AuthService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private OtpService otpService;
 
     /**
      * GUEST: Đăng ký tài khoản người dùng mới
@@ -67,7 +63,7 @@ public class AuthService {
     }
 
     /**
-     * GUEST: Quên mật khẩu (Gửi OTP qua email)
+     * GUEST: Quên mật khẩu (Gửi email yêu cầu khôi phục)
      */
     public long requestPasswordReset(String email) {
         Optional<G8_users> userOpt = userRepository.findByEmail(email);
@@ -76,42 +72,58 @@ public class AuthService {
             throw new RuntimeException("Email không tồn tại trong hệ thống");
         }
 
-        // Generate OTP
-        String otp = otpService.generateOtp();
-        otpService.storeOtp(email, otp);
+        G8_users user = userOpt.get();
+        // Tạo mã OTP gồm 6 chữ số ngẫu nhiên
+        String otp = String.format("%06d", (int) (Math.random() * 1000000));
+        LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(3); // Hết hạn trong 3 phút
 
-        // Gửi email với OTP
-        emailService.sendOtpEmail(email, otp);
+        user.setResetToken(otp);
+        user.setResetTokenExpiry(expiryTime);
+        userRepository.save(user);
 
-        // Return remaining time in seconds
-        return otpService.getRemainingTime(email);
+        // TODO: Gửi email với mã OTP thực tế
+        // emailService.sendPasswordResetEmail(email, otp);
+
+        return 180; // Trả về 180 giây (3 phút)
     }
 
     /**
-     * GUEST: Xác thực OTP
+     * MEMBER: Xác thực mã OTP
      */
     public void verifyOtp(String email, String otp) {
-        if (!otpService.verifyOtp(email, otp)) {
-            throw new RuntimeException("OTP không chính xác hoặc đã hết hạn");
+        Optional<G8_users> userOpt = userRepository.findByEmail(email);
+
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("Email không tồn tại");
+        }
+
+        G8_users user = userOpt.get();
+
+        if (user.getResetToken() == null || !user.getResetToken().equals(otp)) {
+            throw new RuntimeException("Mã OTP không chính xác");
+        }
+
+        if (user.getResetTokenExpiry() == null || user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Mã OTP đã hết hạn");
         }
     }
 
     /**
-     * MEMBER: Đặt lại mật khẩu mới (Sau khi verify OTP)
+     * MEMBER: Đặt lại mật khẩu mới (Reset Password)
      */
     public void resetPassword(String email, String newPassword) {
         Optional<G8_users> userOpt = userRepository.findByEmail(email);
 
         if (userOpt.isEmpty()) {
-            throw new RuntimeException("Email không tồn tại trong hệ thống");
+            throw new RuntimeException("Email không tồn tại");
         }
 
         G8_users user = userOpt.get();
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
 
-        // Gửi email xác nhận đổi mật khẩu
-        emailService.sendPasswordChangeConfirmation(user.getEmail());
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
+        userRepository.save(user);
     }
 
     /**
@@ -124,9 +136,6 @@ public class AuthService {
         if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
             throw new RuntimeException("Mật khẩu cũ không chính xác");
         }
-
-        // Gửi email xác nhận đổi mật khẩu
-        emailService.sendPasswordChangeConfirmation(user.getEmail());
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
