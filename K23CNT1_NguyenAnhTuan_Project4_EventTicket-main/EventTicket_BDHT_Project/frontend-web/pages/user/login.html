@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng Nhập - BDHT Premium Ticketing</title>
+    <script>
+        // Tự động chuyển hướng 127.0.0.1 sang localhost để Facebook Login chạy không lỗi
+        if (window.location.hostname === '127.0.0.1') {
+            window.location.hostname = 'localhost';
+        }
+    </script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -94,8 +100,27 @@
     
     <script>
         window.SOCIAL_AUTH_CONFIG = {
-            googleClientId: '404310159595-htrj1gvm7nv4hsak6j64584tu350e1jd.apps.googleusercontent.com'
+            googleClientId: '404310159595-htrj1gvm7nv4hsak6j64584tu350e1jd.apps.googleusercontent.com',
+            facebookAppId: '1011292878124831' // Đã cập nhật tự động từ App ID trên màn hình của bạn
         };
+
+        // Khởi tạo SDK Facebook không đồng bộ
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId      : window.SOCIAL_AUTH_CONFIG.facebookAppId,
+                cookie     : true,                     
+                xfbml      : true,                     
+                version    : 'v18.0'           
+            });
+        };
+
+        (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = "https://connect.facebook.net/vi_VN/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
     </script>
 
     <script src="../../assets/js/core/api-client.js"></script>

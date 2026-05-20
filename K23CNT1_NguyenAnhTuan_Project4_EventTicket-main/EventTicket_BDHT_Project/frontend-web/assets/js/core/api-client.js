@@ -145,6 +145,29 @@ window.pageUtils = {
     resolveUrl: resolveAppUrl,
     rewriteInternalUrls,
 
+    async initI18n() {
+        if (window.i18n) {
+            window.i18n.init();
+            return;
+        }
+
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = this.resolveUrl('assets/js/core/i18n.js');
+            script.onload = () => {
+                if (window.i18n) {
+                    window.i18n.init();
+                }
+                resolve();
+            };
+            script.onerror = () => {
+                console.error('Lỗi khi tải động i18n.js');
+                resolve();
+            };
+            document.body.appendChild(script);
+        });
+    },
+
     async loadHeader() {
         try {
             const response = await fetch(this.resolveUrl('components/header.html'));
@@ -153,6 +176,8 @@ window.pageUtils = {
             if (headerContainer) {
                 headerContainer.innerHTML = headerHTML;
                 this.setupAuthMenu();
+                // Tự động load và khởi tạo i18n
+                await this.initI18n();
             }
         } catch (error) {
             console.error('Lỗi khi load header:', error);
@@ -169,6 +194,10 @@ window.pageUtils = {
                 if (footerContainer) {
                     footerContainer.innerHTML = footerHTML;
                     this.setupFooterEvents();
+                    // Rerender language for footer after it's loaded
+                    if (window.i18n && typeof window.i18n.renderLanguage === 'function') {
+                        window.i18n.renderLanguage();
+                    }
                 }
             } catch (error) {
                 console.error('Lỗi khi load footer:', error);

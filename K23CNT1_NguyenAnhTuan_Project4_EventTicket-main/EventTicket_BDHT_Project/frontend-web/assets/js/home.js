@@ -265,6 +265,7 @@ function renderCategoryFilters(categories, container) {
     const allChip = document.createElement('div');
     allChip.className = 'px-4 py-2 border border-gray-200 rounded-full text-xs font-bold bg-white text-slate-700 cursor-pointer hover:border-brand-purple hover:text-brand-purple transition duration-200 category-chip active';
     allChip.innerText = 'Tất cả';
+    allChip.setAttribute('data-i18n', 'body.filter_all');
     allChip.addEventListener('click', async () => {
         document.querySelectorAll('.category-chip').forEach(chip => {
             chip.classList.remove('active', 'bg-brand-purple', 'text-white', 'border-brand-purple');
@@ -280,6 +281,24 @@ function renderCategoryFilters(categories, container) {
         const chip = document.createElement('div');
         chip.className = 'px-4 py-2 border border-gray-200 rounded-full text-xs font-bold bg-white text-slate-700 cursor-pointer hover:border-brand-purple hover:text-brand-purple transition duration-200 category-chip';
         chip.innerText = category;
+
+        // Map category names to localization keys dynamically
+        let i18nKey = '';
+        const normCat = category.toLowerCase().trim();
+        if (normCat.includes('ca nhạc') || normCat.includes('concert')) i18nKey = 'nav.music';
+        else if (normCat.includes('văn hóa') || normCat.includes('culture') || normCat.includes('nghệ thuật')) i18nKey = 'nav.culture';
+        else if (normCat.includes('tham quan') || normCat.includes('du lịch') || normCat.includes('tourism') || normCat.includes('sightseeing')) i18nKey = 'nav.tourism';
+        else if (normCat.includes('workshop')) i18nKey = 'nav.workshop';
+        else if (normCat.includes('xem phim') || normCat.includes('movies') || normCat.includes('movie')) i18nKey = 'nav.movies';
+        else if (normCat.includes('thể thao') || normCat.includes('sports')) i18nKey = 'nav.sports';
+        else if (normCat.includes('tin tức') || normCat.includes('news')) i18nKey = 'nav.news';
+        else if (normCat.includes('công nghệ') || normCat.includes('tech')) i18nKey = 'nav.tech';
+        else if (normCat.includes('giáo dục') || normCat.includes('education')) i18nKey = 'nav.education';
+
+        if (i18nKey) {
+            chip.setAttribute('data-i18n', i18nKey);
+        }
+
         chip.addEventListener('click', async () => {
             document.querySelectorAll('.category-chip').forEach(c => {
                 c.classList.remove('active', 'bg-brand-purple', 'text-white', 'border-brand-purple');
@@ -291,6 +310,10 @@ function renderCategoryFilters(categories, container) {
         });
         container.appendChild(chip);
     });
+
+    if (window.i18n && typeof window.i18n.renderLanguage === 'function') {
+        window.i18n.renderLanguage();
+    }
 }
 
 async function searchEvents(keyword) {
@@ -346,7 +369,7 @@ function renderFeaturedGrid(events, giantBox, gridBox) {
     const giantId = giantEvent.eventId || giantEvent.id;
     const giantImg = giantEvent.bannerImageUrl || giantEvent.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800';
     const giantCity = giantEvent.cityName || 'HÀ NỘI';
-    const giantPrice = giantEvent.minPrice ? new Intl.NumberFormat('vi-VN').format(giantEvent.minPrice) + ' VNĐ' : 'Liên hệ';
+    const giantPrice = giantEvent.minPrice ? new Intl.NumberFormat('vi-VN').format(giantEvent.minPrice) + ' VNĐ' : '<span data-i18n="event.contact_price">Liên hệ</span>';
     let giantDate = 'Sắp diễn ra';
     if (giantEvent.date) {
         giantDate = new Date(giantEvent.date).toLocaleDateString('vi-VN');
@@ -359,7 +382,7 @@ function renderFeaturedGrid(events, giantBox, gridBox) {
             <div class="relative w-full aspect-video sm:aspect-square overflow-hidden bg-slate-100 flex-shrink-0">
                 <span class="absolute top-4 left-4 bg-gray-900/80 backdrop-blur-md text-white font-extrabold text-[10px] px-3 py-1.5 rounded-full uppercase tracking-widest z-10">${giantCity}</span>
                 <img src="${giantImg}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" alt="${giantTitle}">
-                <div class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md text-gray-900 font-extrabold text-xs px-4 py-2 rounded-full shadow-sm z-10">Giá từ ${giantPrice}</div>
+                <div class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md text-gray-900 font-extrabold text-xs px-4 py-2 rounded-full shadow-sm z-10"><span data-i18n="event.price_from">Giá từ</span> ${giantPrice}</div>
             </div>
             <div class="p-8 flex-1 flex flex-col justify-between">
                 <div>
@@ -368,7 +391,7 @@ function renderFeaturedGrid(events, giantBox, gridBox) {
                 </div>
                 <div class="border-t border-gray-100 pt-5 mt-5 flex items-center justify-between text-xs font-bold text-gray-500">
                     <span class="flex items-center gap-2"><i class="far fa-calendar-alt"></i> ${giantDate}</span>
-                    <span class="text-brand-orange hover:text-orange-600 inline-flex items-center gap-1.5 transition-colors">Mua vé <i class="fas fa-arrow-right"></i></span>
+                    <span class="text-brand-orange hover:text-orange-600 inline-flex items-center gap-1.5 transition-colors"><span data-i18n="event.buy_ticket">Mua vé</span> <i class="fas fa-arrow-right"></i></span>
                 </div>
             </div>
         </a>
@@ -377,6 +400,10 @@ function renderFeaturedGrid(events, giantBox, gridBox) {
     // 4 small cards
     const smallEvents = events.slice(1, 5);
     renderSmallEventList(smallEvents, gridBox);
+
+    if (window.i18n && typeof window.i18n.renderLanguage === 'function') {
+        window.i18n.renderLanguage();
+    }
 }
 
 function renderSmallEventList(events, container) {
@@ -387,7 +414,7 @@ function renderSmallEventList(events, container) {
         const id = event.eventId || event.id;
         const img = event.bannerImageUrl || event.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500';
         const city = event.cityName || 'HÀ NỘI';
-        const price = event.minPrice ? new Intl.NumberFormat('vi-VN').format(event.minPrice) + 'đ' : 'Liên hệ';
+        const price = event.minPrice ? new Intl.NumberFormat('vi-VN').format(event.minPrice) + 'đ' : '<span data-i18n="event.contact_price">Liên hệ</span>';
         let date = 'Sắp diễn ra';
         if (event.date) {
             date = new Date(event.date).toLocaleDateString('vi-VN');
@@ -414,6 +441,10 @@ function renderSmallEventList(events, container) {
             </a>
         `;
     }).join('');
+
+    if (window.i18n && typeof window.i18n.renderLanguage === 'function') {
+        window.i18n.renderLanguage();
+    }
 }
 
 function renderCategoryList(events, container) {
@@ -423,7 +454,7 @@ function renderCategoryList(events, container) {
         const venue = event.location || 'Địa điểm tổ chức';
         const id = event.eventId || event.id;
         const img = event.bannerImageUrl || event.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500';
-        const price = event.minPrice ? new Intl.NumberFormat('vi-VN').format(event.minPrice) + 'đ' : 'Liên hệ';
+        const price = event.minPrice ? new Intl.NumberFormat('vi-VN').format(event.minPrice) + 'đ' : '<span data-i18n="event.contact_price">Liên hệ</span>';
         let date = 'Sắp diễn ra';
         if (event.date) {
             date = new Date(event.date).toLocaleDateString('vi-VN');
@@ -447,6 +478,10 @@ function renderCategoryList(events, container) {
             </a>
         `;
     }).join('');
+
+    if (window.i18n && typeof window.i18n.renderLanguage === 'function') {
+        window.i18n.renderLanguage();
+    }
 }
 
 function getDetailPath(id) {
@@ -536,14 +571,29 @@ function renderMiniSlider(events) {
         const detailUrl = getDetailPath(id);
         const categoryLabel = item.category || 'Sự kiện mới';
 
+        // Map mini-slider category badge label to localization key dynamically
+        let categoryI18nAttr = '';
+        const normCat = categoryLabel.toLowerCase().trim();
+        if (normCat.includes('ca nhạc') || normCat.includes('concert')) categoryI18nAttr = 'data-i18n="nav.music"';
+        else if (normCat.includes('văn hóa') || normCat.includes('culture') || normCat.includes('nghệ thuật')) categoryI18nAttr = 'data-i18n="nav.culture"';
+        else if (normCat.includes('tham quan') || normCat.includes('du lịch') || normCat.includes('tourism') || normCat.includes('sightseeing')) categoryI18nAttr = 'data-i18n="nav.tourism"';
+        else if (normCat.includes('workshop')) categoryI18nAttr = 'data-i18n="nav.workshop"';
+        else if (normCat.includes('xem phim') || normCat.includes('movies') || normCat.includes('movie')) categoryI18nAttr = 'data-i18n="nav.movies"';
+        else if (normCat.includes('thể thao') || normCat.includes('sports')) categoryI18nAttr = 'data-i18n="nav.sports"';
+        else if (normCat.includes('tin tức') || normCat.includes('news')) categoryI18nAttr = 'data-i18n="nav.news"';
+
         return `
             <a href="${detailUrl}" class="mini-slider-card group flex-shrink-0 block bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-2 transition-all duration-300 ease-in-out p-3">
                 <div class="relative w-full aspect-video rounded-2xl overflow-hidden bg-slate-100 mb-4">
                     <img src="${img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" alt="${title}">
-                    <span class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md text-brand-purple font-extrabold text-[9px] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm z-10">${categoryLabel}</span>
+                    <span class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md text-brand-purple font-extrabold text-[9px] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm z-10" ${categoryI18nAttr}>${categoryLabel}</span>
                 </div>
                 <h4 class="text-sm font-extrabold text-gray-900 line-clamp-1 leading-snug group-hover:text-brand-purple transition-colors px-1 tracking-tight">${title}</h4>
             </a>
         `;
     }).join('');
+
+    if (window.i18n && typeof window.i18n.renderLanguage === 'function') {
+        window.i18n.renderLanguage();
+    }
 }

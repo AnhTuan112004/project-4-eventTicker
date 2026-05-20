@@ -1,8 +1,10 @@
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\repository\UserRepository.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\entity\G8_promotion.java
+C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\controller\user\FacebookAuthController.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\service\ReviewService.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\repository\OrderItemRepository.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\security\SecurityConfig.java
+C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\entity\G8_AppTranslation.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\service\PromotionService.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\service\TicketService.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\controller\user\EventController.java
@@ -49,8 +51,11 @@ C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTi
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\controller\user\VenueController.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\repository\PaymentRepository.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\controller\user\HomeController.java
+C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\service\AppTranslationService.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\entity\G8_ticket.java
+C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\repository\AppTranslationRepository.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\repository\ReviewRepository.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\controller\user\AiChatController.java
+C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\controller\user\TranslationController.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\service\AdminDashboardService.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\service\EventImageService.java

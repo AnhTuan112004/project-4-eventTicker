@@ -20,18 +20,39 @@ function attachEventListeners() {
     otpForm.addEventListener('submit', handleOtpSubmit);
     passwordForm.addEventListener('submit', handlePasswordSubmit);
 
-    // OTP input auto-focus
+    // OTP input auto-focus, paste, and validation enhancements
     const otpInputs = document.querySelectorAll('.otp-input');
     otpInputs.forEach((input, index) => {
+        // Chỉ cho phép nhập số & tự động giới hạn độ dài là 1
         input.addEventListener('input', (e) => {
+            const val = e.target.value.replace(/[^0-9]/g, '');
+            e.target.value = val.slice(-1); // Chỉ lấy ký tự số cuối cùng nhập vào
+
             if (e.target.value && index < otpInputs.length - 1) {
                 otpInputs[index + 1].focus();
             }
         });
 
+        // Xử lý nút xoá ngược Backspace mượt mà như native app
         input.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && !e.target.value && index > 0) {
-                otpInputs[index - 1].focus();
+            if (e.key === 'Backspace') {
+                if (!e.target.value && index > 0) {
+                    otpInputs[index - 1].value = '';
+                    otpInputs[index - 1].focus();
+                }
+            }
+        });
+
+        // Xử lý dán mã (Copy - Paste) 6 số cực kỳ mượt mà
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pasteData = (e.clipboardData || window.clipboardData).getData('text').trim();
+            if (/^\d{6}$/.test(pasteData)) {
+                otpInputs.forEach((inputField, i) => {
+                    inputField.value = pasteData[i];
+                });
+                otpInputs[5].focus();
+                clearError('otp-error');
             }
         });
     });
