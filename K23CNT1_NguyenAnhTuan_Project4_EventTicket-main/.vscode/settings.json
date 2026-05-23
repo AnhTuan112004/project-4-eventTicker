@@ -1,4 +1,5 @@
 {
     "java.configuration.updateBuildConfiguration": "interactive",
-    "liveServer.settings.root": "/EventTicket_BDHT_Project/frontend-web"
+    "liveServer.settings.root": "/EventTicket_BDHT_Project/frontend-web",
+    "liveServer.settings.host": "127.0.0.1"
 }

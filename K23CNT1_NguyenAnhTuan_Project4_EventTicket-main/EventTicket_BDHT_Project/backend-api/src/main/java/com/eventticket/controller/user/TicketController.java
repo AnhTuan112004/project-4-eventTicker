@@ -2,8 +2,7 @@ package com.eventticket.controller.user;
 
 import com.eventticket.entity.G8_ticket;
 import com.eventticket.entity.G8_ticketType;
-import com.eventticket.service.TicketService;
-import com.eventticket.service.TicketTypeService;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -11,7 +10,10 @@ import org.springframework.web.bind.annotation.*;
 
 import com.eventticket.entity.G8_users;
 import com.eventticket.repository.UserRepository;
+import com.eventticket.service.user.TicketService;
+import com.eventticket.service.user.TicketTypeService;
 
+import org.springframework.http.HttpStatus;
 import java.util.List;
 
 @RestController
@@ -45,7 +47,7 @@ public class TicketController {
     /**
      * GUEST: Xem danh sách loại vé của sự kiện
      */
-    @GetMapping("/api/nat/public/ticket-types/{eventId}")
+    @GetMapping("/api/vtd/public/ticket-types/{eventId}")
     public ResponseEntity<List<G8_ticketType>> getActiveTicketTypes(@PathVariable Integer eventId) {
         List<G8_ticketType> ticketTypes = ticketTypeService.getActiveTicketTypesByEvent(eventId);
         return ResponseEntity.ok(ticketTypes);
@@ -54,7 +56,7 @@ public class TicketController {
     /**
      * MEMBER: Xem các loại vé còn hàng
      */
-    @GetMapping("/api/nat/member/ticket-types/{eventId}/available")
+    @GetMapping("/api/vtd/member/ticket-types/{eventId}/available")
     public ResponseEntity<List<G8_ticketType>> getAvailableTicketTypes(@PathVariable Integer eventId) {
         List<G8_ticketType> ticketTypes = ticketTypeService.getAvailableTicketsByEvent(eventId);
         return ResponseEntity.ok(ticketTypes);
@@ -63,7 +65,7 @@ public class TicketController {
     /**
      * MEMBER: Xem kho vé điện tử (danh sách vé đã mua)
      */
-    @GetMapping("/api/nat/member/my-tickets")
+    @GetMapping("/api/vtd/member/my-tickets")
     public ResponseEntity<List<G8_ticket>> getUserTickets() {
         Integer userId = getCurrentUserId();
         if (userId == null) {
@@ -76,9 +78,18 @@ public class TicketController {
     /**
      * MEMBER: Xem QR code của vé
      */
-    @GetMapping("/api/nat/member/tickets/{ticketId}")
+    @GetMapping("/api/vtd/member/tickets/{ticketId}")
     public ResponseEntity<G8_ticket> getTicketQrCode(@PathVariable Integer ticketId) {
+        Integer userId = getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.badRequest().build();
+        }
         G8_ticket ticket = ticketService.getTicketQrCode(ticketId);
+        // SECURITY: Member chỉ được xem QR code vé của chính mình.
+        if (ticket.getOrder() == null || ticket.getOrder().getUser() == null
+                || !userId.equals(ticket.getOrder().getUser().getUserId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return ResponseEntity.ok(ticket);
     }
 

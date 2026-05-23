@@ -1,0 +1,131 @@
+package com.eventticket.service.user;
+
+import com.eventticket.entity.G8_order;
+import com.eventticket.entity.G8_order_item;
+import com.eventticket.entity.G8_payment;
+import com.eventticket.entity.G8_ticket;
+import com.eventticket.repository.OrderItemRepository;
+import com.eventticket.repository.OrderRepository;
+import com.eventticket.repository.PaymentRepository;
+import com.eventticket.repository.TicketRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Service
+public class PaymentService {
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
+    @Autowired
+    private TicketRepository ticketRepository;
+
+    @Autowired
+    private TicketTypeService ticketTypeService;
+
+    /**
+     * MEMBER: Chọn phương thức thanh toán và tạo giao dịch thanh toán.
+     */
+    public G8_payment createPayment(G8_order order, String paymentMethod) {
+        if (!paymentMethod.matches("MOMO|VNPAY|ZALOPAY|CASH")) {
+            throw new RuntimeException("Phương thức thanh toán không hợp lệ");
+        }
+
+        G8_payment payment = new G8_payment();
+        payment.setOrder(order);
+        payment.setPaymentMethod(paymentMethod);
+        payment.setAmount(order.getFinalAmount());
+        payment.setStatus("PENDING");
+
+        return paymentRepository.save(payment);
+    }
+
+    /**
+     * MEMBER: Nhận và hiển thị kết quả giao dịch.
+     */
+    public G8_payment getPaymentStatus(Integer paymentId) {
+        return paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new RuntimeException("Giao dịch không tồn tại"));
+    }
+
+    /**
+     * INTERNAL: Webhook cập nhật trạng thái thanh toán.
+     * Nếu SUCCESS thì hoàn tất đơn hàng và tạo vé điện tử kèm QR code.
+     */
+    @Transactional
+    public G8_payment updatePaymentStatus(Integer paymentId, String status, String transactionId) {
+        G8_payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new RuntimeException("Giao dịch không tồn tại"));
+
+        payment.setStatus(status);
+        payment.setTransactionId(transactionId);
+
+        if ("SUCCESS".equals(status)) {
+            payment.setPaidAt(LocalDateTime.now());
+            completeOrderAndCreateTickets(payment.getOrder());
+        }
+
+        return paymentRepository.save(payment);
+    }
+
+    /**
+     * MEMBER: Yêu cầu hoàn tiền.
+     */
+    public G8_payment requestRefund(Integer paymentId) {
+        G8_payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new RuntimeException("Giao dịch không tồn tại"));
+
+        if (!"SUCCESS".equals(payment.getStatus())) {
+            throw new RuntimeException("Chỉ có thể hoàn tiền cho những giao dịch thành công");
+        }
+
+        payment.setStatus("REFUND_REQUESTED");
+        return paymentRepository.save(payment);
+    }
+
+    /**
+     * INTERNAL: Tạo vé sau thanh toán thành công.
+     * Có kiểm tra order đã có vé chưa để webhook gọi lại không sinh trùng vé.
+     */
+    private void completeOrderAndCreateTickets(G8_order order) {
+        if (order == null) {
+            throw new RuntimeException("Thanh toán không gắn với đơn hàng");
+        }
+
+        if (ticketRepository.countTicketsByOrderId(order.getOrderId()) > 0) {
+            order.setStatus("COMPLETED");
+            orderRepository.save(order);
+            return;
+        }
+
+        for (G8_order_item item : orderItemRepository.findByOrderId(order.getOrderId())) {
+            ticketTypeService.incrementSoldQuantity(item.getTicketType().getTicketTypeId(), item.getQuantity());
+
+            for (int i = 0; i < item.getQuantity(); i++) {
+                G8_ticket ticket = new G8_ticket();
+                ticket.setOrder(order);
+                ticket.setTicketType(item.getTicketType());
+                ticket.setQrCode(generateQrCode());
+                ticket.setCheckInStatus(false);
+                ticketRepository.save(ticket);
+            }
+        }
+
+        order.setStatus("COMPLETED");
+        orderRepository.save(order);
+    }
+
+    private String generateQrCode() {
+        return "TICKET-" + UUID.randomUUID();
+    }
+}

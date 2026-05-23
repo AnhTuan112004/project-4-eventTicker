@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupBookingForm();
     setupStickyFooterScroll();
     setupModalEvents();
+    initializeReviewSystem();
 });
 
 // ==========================================
@@ -40,7 +41,7 @@ async function loadEventDetails() {
         let isFallback = false;
 
         try {
-            event = await window.apiClient.get(`/api/nat/public/events/${eventId}`);
+            event = await window.apiClient.get(`/api/vtd/public/events/${eventId}`);
         } catch (apiErr) {
             console.warn("Lỗi API lấy chi tiết sự kiện, đang kiểm tra dữ liệu dự phòng:", apiErr);
             event = getFallbackEventDetails(eventId);
@@ -101,9 +102,10 @@ async function loadEventDetails() {
             ticketTypes = event.ticketTypes || [];
         } else {
             try {
+                // Gọi API lấy hạng vé còn trống (Available) cho thành viên hoặc khách
                 const ticketApi = window.apiClient.getToken() ?
-                    `/api/nat/member/ticket-types/${eventId}/available` :
-                    `/api/nat/public/ticket-types/${eventId}`;
+                    `/api/vtd/member/ticket-types/${eventId}/available` :
+                    `/api/vtd/public/ticket-types/${eventId}`;
                 ticketTypes = await window.apiClient.get(ticketApi);
             } catch (ticketErr) {
                 console.warn("Lỗi tải hạng vé thực tế, dùng hạng vé của sự kiện:", ticketErr);
@@ -114,6 +116,21 @@ async function loadEventDetails() {
         // Render vào bộ chọn đặt vé bên phải
         if (ticketTypesContainer) {
             renderTicketTypesSelect(ticketTypes, ticketTypesContainer);
+        }
+
+        // Cập nhật MOCK_CART_TICKETS để giỏ hàng hiển thị đúng vé thực tế
+        if (typeof MOCK_CART_TICKETS !== 'undefined') {
+            MOCK_CART_TICKETS.length = 0; // Clear array
+            ticketTypes.forEach(type => {
+                const remaining = type.availableQuantity !== undefined ? type.availableQuantity : (type.totalQuantity - (type.soldQuantity || 0));
+                MOCK_CART_TICKETS.push({
+                    id: type.ticketTypeId || type.id,
+                    name: type.typeName || type.name || 'Vé sự kiện',
+                    price: type.price || 0,
+                    soldOut: remaining <= 0,
+                    quantity: 0
+                });
+            });
         }
 
         // Render vào danh sách giá vé tĩnh bên trái
@@ -147,7 +164,7 @@ async function loadEventDetails() {
 // Tải thêm ảnh phụ sự kiện
 async function loadEventImages(eventId) {
     try {
-        const images = await window.apiClient.get(`/api/nat/public/events/${eventId}/images`);
+        const images = await window.apiClient.get(`/api/vtd/public/events/${eventId}/images`);
         return Array.isArray(images) && images.length > 0 ? images : [];
     } catch (error) {
         console.warn('Không lấy được ảnh sự kiện phụ:', error);
@@ -222,19 +239,25 @@ function renderTicketTypesSelect(ticketTypes, container) {
         container.innerHTML = '<p class="text-xs font-bold text-red-500">Không có loại vé nào đang mở bán.</p>';
         return;
     }
-
+    
     container.innerHTML = ticketTypes.map((type, index) => {
         const name = type.typeName || type.name || 'Vé chung';
-        const price = type.price ? Number(type.price).toLocaleString('vi-VN') + ' đ' : 'Liên hệ';
-        const remaining = (type.totalQuantity || 0) - (type.soldQuantity || 0);
+        const price = type.price ? Number(type.price).toLocaleString('vi-VN') + ' đ' : 'Miễn phí';
+        const remaining = type.availableQuantity !== undefined ? type.availableQuantity : (type.totalQuantity - (type.soldQuantity || 0));
         
         return `
-            <label class="flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition text-xs font-bold ${index === 0 ? 'border-brand-orange bg-orange-50/50 text-brand-orange' : 'border-gray-200 hover:border-brand-orange text-slate-700'}" onclick="highlightSelectedTicket(this)">
-                <span class="flex items-center gap-2">
-                    <input type="radio" name="ticketType" value="${type.ticketTypeId}" ${index === 0 ? 'checked' : ''} class="accent-brand-orange w-4 h-4 cursor-pointer">
-                    <span>${name}</span>
+            <label class="flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 text-sm font-bold ${index === 0 ? 'border-brand-orange bg-orange-50/30 text-brand-orange shadow-md' : 'border-gray-100 hover:border-brand-orange/50 hover:bg-gray-50 text-slate-700'}" onclick="highlightSelectedTicket(this)">
+                <span class="flex items-center gap-3">
+                    <div class="relative flex items-center justify-center w-5 h-5 rounded-full border-2 ${index === 0 ? 'border-brand-orange' : 'border-gray-300'}">
+                        <div class="w-2.5 h-2.5 rounded-full bg-brand-orange ${index === 0 ? 'scale-100' : 'scale-0'} transition-transform duration-200"></div>
+                        <input type="radio" name="ticketType" value="${type.ticketTypeId}" ${index === 0 ? 'checked' : ''} class="opacity-0 absolute inset-0 cursor-pointer">
+                    </div>
+                    <span class="font-black tracking-wide">${name}</span>
                 </span>
-                <span>${price} (Còn ${remaining})</span>
+                <span class="text-right flex flex-col">
+                    <span class="text-brand-orange text-base font-black">${price}</span>
+                    <span class="text-[10px] font-semibold text-slate-400">Còn ${remaining} vé</span>
+                </span>
             </label>
         `;
     }).join('');
@@ -245,9 +268,43 @@ window.highlightSelectedTicket = function(labelEl) {
     if (!labelEl) return;
     const labels = labelEl.parentElement.querySelectorAll('label');
     labels.forEach(lbl => {
-        lbl.className = "flex items-center justify-between p-3.5 rounded-xl border border-gray-200 cursor-pointer hover:border-brand-orange text-slate-700 text-xs font-bold";
+        lbl.className = "flex items-center justify-between p-4 rounded-xl border-2 border-gray-100 cursor-pointer hover:border-brand-orange/50 hover:bg-gray-50 text-slate-700 text-sm font-bold transition-all duration-300";
+        const circleBorder = lbl.querySelector('.w-5.h-5');
+        const circleDot = lbl.querySelector('.w-2\\.5.h-2\\.5');
+        if(circleBorder) {
+            circleBorder.classList.remove('border-brand-orange');
+            circleBorder.classList.add('border-gray-300');
+        }
+        if(circleDot) {
+            circleDot.classList.remove('scale-100');
+            circleDot.classList.add('scale-0');
+        }
     });
-    labelEl.className = "flex items-center justify-between p-3.5 rounded-xl border-2 border-brand-orange bg-orange-50/50 text-brand-orange text-xs font-bold cursor-pointer";
+    
+    labelEl.className = "flex items-center justify-between p-4 rounded-xl border-2 border-brand-orange bg-orange-50/30 text-brand-orange shadow-md cursor-pointer transition-all duration-300 text-sm font-bold";
+    const circleBorder = labelEl.querySelector('.w-5.h-5');
+    const circleDot = labelEl.querySelector('.w-2\\.5.h-2\\.5');
+    if(circleBorder) {
+        circleBorder.classList.remove('border-gray-300');
+        circleBorder.classList.add('border-brand-orange');
+    }
+    if(circleDot) {
+        circleDot.classList.remove('scale-0');
+        circleDot.classList.add('scale-100');
+    }
+};
+
+window.updateTicketQty = function(change) {
+    const hiddenInput = document.getElementById('ticket-qty');
+    const displaySpan = document.getElementById('ticket-qty-display');
+    if(hiddenInput && displaySpan) {
+        let currentVal = parseInt(hiddenInput.value) || 1;
+        let newVal = currentVal + change;
+        if(newVal < 1) newVal = 1;
+        if(newVal > 10) newVal = 10;
+        hiddenInput.value = newVal;
+        displaySpan.innerText = newVal;
+    }
 };
 
 // Render bảng giá vé tĩnh bên cột trái
@@ -362,7 +419,7 @@ function setupBookingForm() {
                 msgBox.innerHTML = 'Bạn cần đăng nhập trước khi đặt vé.';
             }
             setTimeout(() => {
-                window.location.href = './login.html';
+                window.location.href = window.pageUtils ? window.pageUtils.resolveUrl('pages/user/login.html') : './login.html';
             }, 1400);
             return;
         }
@@ -380,24 +437,42 @@ function setupBookingForm() {
         }
 
         const ticketTypeId = Number(selectedTicketType.value);
+        // Lấy thông tin hạng vé để hiển thị ở trang payment
+        const selectedLabel = selectedTicketType.closest('label');
+        const typeName = selectedLabel ? selectedLabel.querySelector('span span').innerText : 'Vé sự kiện';
+        const priceText = selectedLabel ? selectedLabel.querySelectorAll('span')[2].innerText.split('(')[0].trim() : '0';
+        const unitPrice = Number(priceText.replace(/[^0-9]/g, ''));
+
+        // 1. Đóng gói dữ liệu giỏ hàng tạm thời
+        const pendingCheckout = {
+            eventId: new URLSearchParams(window.location.search).get('id'),
+            eventName: document.getElementById('detail-title').innerText,
+            bannerImageUrl: document.getElementById('detail-image').src,
+            items: [{
+                ticketTypeId: ticketTypeId,
+                typeName: typeName,
+                quantity: qty,
+                price: unitPrice,
+                subtotal: unitPrice * qty
+            }],
+            totalQuantity: qty,
+            totalAmount: unitPrice * qty,
+            createdAt: new Date().toISOString()
+        };
+
+        // 2. Lưu vào sessionStorage để đảm bảo an toàn dữ liệu phiên giao dịch
+        sessionStorage.setItem('checkoutData', JSON.stringify(pendingCheckout));
+
+        // 3. Hiệu ứng chuyển hướng
         if (msgBox) {
-            msgBox.className = "text-xs font-bold text-center text-blue-600";
-            msgBox.innerText = 'Đang thêm vé vào đơn hàng...';
+            msgBox.className = "text-xs font-bold text-center p-3 bg-blue-50 border border-blue-100 rounded text-blue-600";
+            msgBox.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang chuyển đến trang thanh toán...';
         }
 
         try {
-            const orderId = await getOrCreateOrder();
-            await window.apiClient.post(`/api/nat/member/orders/${orderId}/items`, {
-                ticketTypeId,
-                quantity: qty
-            });
-            
-            if (msgBox) {
-                const profileUrl = 'profile.html';
-                
-                msgBox.className = "text-xs font-bold text-center p-3 bg-emerald-50 border border-emerald-100 rounded text-emerald-655";
-                msgBox.innerHTML = `🎉 Đã thêm thành công ${qty} vé! <a href='${profileUrl}' class='text-brand-purple underline ml-1'>Xem giỏ hàng</a>`;
-            }
+            setTimeout(() => {
+                window.location.href = 'payment.html';
+            }, 800);
         } catch (error) {
             if (msgBox) {
                 msgBox.className = "text-xs font-bold text-center p-3 bg-red-50 border border-red-100 rounded text-red-655";
@@ -412,7 +487,7 @@ async function getOrCreateOrder() {
     let orderId = localStorage.getItem('currentOrderId');
     if (orderId) return orderId;
 
-    const data = await window.apiClient.post('/api/nat/member/orders', {});
+    const data = await window.apiClient.post('/api/vtd/member/orders', {});
     if (!data || !data.orderId) {
         throw new Error('Không tạo được phiên giao dịch đơn hàng.');
     }
@@ -443,50 +518,43 @@ function setupStickyFooterScroll() {
 }
 
 // ==========================================
-// 5. MOCK TICKETS & CART LOGIC FOR MODAL
+// 5. MODAL CART & PAYMENT LOGIC
 // ==========================================
-const MOCK_CART_TICKETS = [
-    { id: 1, name: 'Vé GA: Zone "Anh đau từ lúc em đi"', price: 850000, soldOut: false, quantity: 0 },
-    { id: 2, name: 'Vé VIP: Zone "Trời vẫn còn xanh"', price: 1250000, soldOut: false, quantity: 0 },
-    { id: 3, name: 'Vé VIP: Zone "Kẻ Say Tình"', price: 1650000, soldOut: false, quantity: 0 },
-    { id: 4, name: 'Vé SVIP: Zone "Hoa và Váy"', price: 2150000, soldOut: true, quantity: 0 },
-    { id: 5, name: 'Hạng vé đặc biệt: "SVIP Class"', price: 2650000, soldOut: false, quantity: 0 }
-];
 
-window.activeDiscount = 0; // Tỷ lệ chiết khấu (0 - 1)
+// FIX: Sử dụng MOCK_CART_TICKETS để renderModalCart (sẽ được cập nhật từ API)
+let MOCK_CART_TICKETS = [];
 
-// Thiết lập các sự kiện mở/đóng modal thanh toán
+// FIX: Định nghĩa hàm setupModalEvents để xử lý đóng mở Modal đặt vé
 function setupModalEvents() {
     const modal = document.getElementById('booking-modal');
-    const summaryBtn = document.getElementById('summary-buy-btn');
-    const stickyBtn = document.getElementById('sticky-buy-btn');
     const closeBtn = document.getElementById('close-modal-btn');
+    // Các nút kích hoạt modal (nếu có trong HTML)
+    const triggerBtns = document.querySelectorAll('[data-trigger="booking-modal"]');
 
     if (!modal) return;
 
     const openModal = () => {
         modal.classList.remove('hidden');
-        document.body.classList.add('overflow-hidden'); // Chặn cuộn trang chính
-        renderModalCart();
+        document.body.classList.add('overflow-hidden');
+        if (typeof renderModalCart === 'function') renderModalCart();
     };
 
     const closeModal = () => {
         modal.classList.add('hidden');
-        document.body.classList.remove('overflow-hidden'); // Mở cuộn trang chính
+        document.body.classList.remove('overflow-hidden');
     };
 
-    if (summaryBtn) summaryBtn.addEventListener('click', openModal);
-    if (stickyBtn) stickyBtn.addEventListener('click', openModal);
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    
+    triggerBtns.forEach(btn => btn.addEventListener('click', openModal));
 
-    // Click ra ngoài vùng trắng để đóng modal
+    // Đóng khi click ra ngoài vùng modal
     modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeModal();
-        }
+        if (e.target === modal) closeModal();
     });
 }
 
+// Cập nhật: Thay thế MOCK_CART_TICKETS bằng việc đọc dữ liệu từ TicketTypes đã load
 // Render giỏ hàng trong Modal
 function renderModalCart() {
     const container = document.getElementById('modal-cart-items');
@@ -637,6 +705,477 @@ window.submitModalCheckout = function() {
     
     // Chuyển hướng
                 window.location.href = './payment.html';
+};
+
+// ==========================================================
+// REVIEW / RATING SYSTEM - HỆ THỐNG ĐÁNH GIÁ CHỐNG SPAM
+// ==========================================================
+
+async function initializeReviewSystem() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventId = urlParams.get('id');
+    
+    if (!eventId) return;
+
+    // Kiểm tra điều kiện hiển thị form đánh giá
+    await checkReviewEligibility(eventId);
+    
+    // Tải danh sách reviews
+    await loadReviews(eventId);
+    
+    // Setup star rating interaction
+    setupStarRating();
+    
+    // Setup form submit
+    setupReviewFormSubmit(eventId);
+}
+
+// Kiểm tra điều kiện hiển thị form đánh giá
+async function checkReviewEligibility(eventId) {
+    const token = window.apiClient ? window.apiClient.getToken() : null;
+    const formContainer = document.getElementById('review-form-container');
+    const form = document.getElementById('review-form');
+    const loginPrompt = document.getElementById('review-login-prompt');
+    const notPurchasedPrompt = document.getElementById('review-not-purchased-prompt');
+    const alreadyReviewedPrompt = document.getElementById('review-already-reviewed-prompt');
+
+    if (!formContainer) return;
+
+    // 1. KIỂM TRA ĐĂNG NHẬP
+    if (!token) {
+        loginPrompt.classList.remove('hidden');
+        form.classList.add('hidden');
+        return;
+    }
+
+    // 2. KIỂM TRA QUYỀN ĐÁNH GIÁ (ĐÃ MUA VÉ CHƯA)
+    let isEligible = false;
+    try {
+        const response = await window.apiClient.get(`/api/vtd/member/events/${eventId}/purchase-status`);
+        isEligible = response.hasPurchased || response.purchased || response.status === 'COMPLETED' || false;
+    } catch (err) {
+        console.warn("Không thể kiểm tra trạng thái mua vé:", err);
+        isEligible = false;
+    }
+
+    if (!isEligible) {
+        notPurchasedPrompt.classList.remove('hidden');
+        form.classList.add('hidden');
+        return;
+    }
+
+    // 3. KIỂM TRA TRÙNG LẶP (ĐÃ ĐÁNH GIÁ CHƯA)
+    let hasReviewed = false;
+    try {
+        const response = await window.apiClient.get(`/api/vtd/member/events/${eventId}/my-review`);
+        hasReviewed = response && response.reviewId ? true : false;
+    } catch (err) {
+        console.warn("Không thể kiểm tra trạng thái đánh giá:", err);
+        hasReviewed = false;
+    }
+
+    if (hasReviewed) {
+        alreadyReviewedPrompt.classList.remove('hidden');
+        form.classList.add('hidden');
+        return;
+    }
+
+    // 4. HIỂN THỊ FORM ĐÁNH GIÁ
+    loginPrompt.classList.add('hidden');
+    notPurchasedPrompt.classList.add('hidden');
+    alreadyReviewedPrompt.classList.add('hidden');
+    form.classList.remove('hidden');
+}
+
+// Setup Star Rating Interaction (1-5 sao)
+function setupStarRating() {
+    const starContainer = document.getElementById('star-rating');
+    const ratingInput = document.getElementById('review-rating');
+    const ratingDisplay = document.getElementById('rating-display');
+    
+    if (!starContainer) return;
+
+    const stars = starContainer.querySelectorAll('button');
+    const starLabels = ['', '1 sao ⭐', '2 sao ⭐⭐', '3 sao ⭐⭐⭐', '4 sao ⭐⭐⭐⭐', '5 sao ⭐⭐⭐⭐⭐'];
+
+    stars.forEach(star => {
+        star.addEventListener('click', (e) => {
+            e.preventDefault();
+            const rating = star.dataset.rating;
+            ratingInput.value = rating;
+            
+            // Cập nhật hiển thị sao
+            stars.forEach((s, idx) => {
+                if (idx < rating) {
+                    s.classList.remove('text-gray-300');
+                    s.classList.add('text-yellow-400');
+                } else {
+                    s.classList.add('text-gray-300');
+                    s.classList.remove('text-yellow-400');
+                }
+            });
+
+            // Cập nhật text
+            if (ratingDisplay) {
+                ratingDisplay.innerText = `Bạn xếp hạng: ${starLabels[rating]}`;
+            }
+        });
+
+        // Hover effect
+        star.addEventListener('mouseover', () => {
+            const rating = star.dataset.rating;
+            stars.forEach((s, idx) => {
+                if (idx < rating) {
+                    s.classList.remove('text-gray-300');
+                    s.classList.add('text-yellow-300');
+                } else {
+                    s.classList.add('text-gray-300');
+                    s.classList.remove('text-yellow-300');
+                }
+            });
+        });
+    });
+
+    starContainer.addEventListener('mouseleave', () => {
+        const currentRating = ratingInput.value;
+        stars.forEach((s, idx) => {
+            if (idx < currentRating) {
+                s.classList.remove('text-gray-300');
+                s.classList.add('text-yellow-400');
+            } else {
+                s.classList.add('text-gray-300');
+                s.classList.remove('text-yellow-400');
+            }
+        });
+    });
+}
+
+// Setup Form Submit
+function setupReviewFormSubmit(eventId) {
+    const form = document.getElementById('review-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const rating = document.getElementById('review-rating').value;
+        const content = document.getElementById('review-content').value.trim();
+
+        // Validation
+        if (!rating || rating < 1 || rating > 5) {
+            alert('Vui lòng chọn xếp hạng từ 1 đến 5 sao.');
+            return;
+        }
+
+        if (content.length < 10) {
+            alert('Nhận xét phải có ít nhất 10 ký tự.');
+            return;
+        }
+
+        if (content.length > 500) {
+            alert('Nhận xét không vượt quá 500 ký tự.');
+            return;
+        }
+
+        // Submit
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang gửi...';
+        submitBtn.disabled = true;
+
+        try {
+            let response;
+            if (window.currentEditReviewId) {
+                // Sửa đánh giá (PUT)
+                response = await window.apiClient.put(`/api/vtd/member/reviews/${window.currentEditReviewId}`, {
+                    rating: parseInt(rating),
+                    comment: content
+                });
+            } else {
+                // Đánh giá mới (POST)
+                response = await window.apiClient.post(`/api/vtd/member/events/${eventId}/reviews`, { 
+                    rating: parseInt(rating),
+                    comment: content
+                });
+            }
+
+            if (response) {
+                if (window.currentEditReviewId) {
+                    alert('Cập nhật đánh giá thành công!');
+                } else {
+                    alert('🎉 Cảm ơn bạn! Đánh giá của bạn đã được gửi thành công.');
+                }
+                
+                // Reset form
+                form.reset();
+                document.getElementById('review-rating').value = 5;
+                document.getElementById('rating-display').innerText = 'Bạn xếp hạng: 5 sao ⭐⭐⭐⭐⭐';
+                
+                // Khôi phục nút submit
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> Gửi đánh giá';
+                window.currentEditReviewId = null;
+                
+                // Reload reviews
+                await loadReviews(eventId);
+                
+                // Hide form & show "already reviewed" message (chỉ ẩn khi viết mới, nếu sửa thì ko cần ẩn, 
+                // nhưng backend chỉ cho 1 user/1 review nên ẩn luôn cũng hợp lý)
+                form.classList.add('hidden');
+                document.getElementById('review-already-reviewed-prompt').classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Lỗi gửi đánh giá:', error);
+            alert('Lỗi: ' + (error.message || 'Không thể gửi đánh giá. Vui lòng thử lại.'));
+        } finally {
+            if (!window.currentEditReviewId && !form.classList.contains('hidden')) {
+                submitBtn.innerHTML = originalText;
+            }
+            submitBtn.disabled = false;
+        }
+    });
+}
+
+// Tải danh sách reviews từ Backend
+async function loadReviews(eventId) {
+    const reviewsList = document.getElementById('reviews-list');
+    if (!reviewsList) return;
+
+    // FIX: Hiển thị trạng thái đang tải trước khi gọi API
+    reviewsList.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-brand-orange mr-2"></i>Đang tải bình luận...</div>';
+
+    try {
+        // Gọi song song: danh sách reviews + điểm TB chính thức từ Backend
+        const [response, avgResponse] = await Promise.allSettled([
+            window.apiClient.get(`/api/vtd/public/events/${eventId}/reviews`),
+            window.apiClient.get(`/api/vtd/public/events/${eventId}/reviews/average`)
+        ]);
+        
+        // FIX: Xử lý trường hợp Backend trả về Page object (có content) hoặc Array trực tiếp
+        const reviewsData = response.status === 'fulfilled' ? response.value : [];
+        const data = Array.isArray(reviewsData) ? reviewsData : (reviewsData?.content || []);
+        
+        // Lấy điểm TB từ Backend (ưu tiên) hoặc tính client-side (fallback)
+        let backendAvg = null;
+        if (avgResponse.status === 'fulfilled' && avgResponse.value != null) {
+            // Backend có thể trả về số trực tiếp hoặc object { averageRating: ... }
+            const avgVal = avgResponse.value;
+            backendAvg = typeof avgVal === 'number' ? avgVal : (avgVal?.averageRating ?? avgVal?.average ?? null);
+        }
+        
+        calculateAndRenderReviewStats(data, backendAvg); // Truyền điểm TB từ Backend
+        renderReviews(data);           
+    } catch (err) {
+        console.warn('Lỗi tải danh sách reviews:', err);
+        reviewsList.innerHTML = '<div class="text-center py-4 text-slate-400"><p>Không thể tải đánh giá lúc này.</p></div>';
+    }
+}
+
+// ==========================================================
+// FIX: HÀM TÍNH TOÁN THỐNG KÊ ĐỘNG (DYNAMIC STATISTICS)
+// backendAvg: điểm TB chính thức từ API (ưu tiên), null = tự tính client-side
+// ==========================================================
+function calculateAndRenderReviewStats(reviews, backendAvg) {
+    const data = Array.isArray(reviews) ? reviews : [];
+    const total = data.length;
+    
+    const avgDisplay = document.getElementById('avg-rating');
+    const totalDisplay = document.getElementById('total-reviews-count');
+
+    // Nếu chưa có review nào, đưa về trạng thái 0
+    if (total === 0 && backendAvg == null) {
+        if (avgDisplay) avgDisplay.innerText = "0.0";
+        if (totalDisplay) totalDisplay.innerText = "Chưa có lượt đánh giá";
+        [1, 2, 3, 4, 5].forEach(s => {
+            const bar = document.getElementById(`star-${s}-bar`);
+            const countTxt = document.getElementById(`star-${s}-count`);
+            if (bar) bar.style.width = '0%';
+            if (countTxt) countTxt.innerText = '0';
+        });
+        return;
+    }
+
+    // 1. Điểm trung bình: ưu tiên Backend, fallback tự tính
+    let average;
+    if (backendAvg != null && !isNaN(Number(backendAvg))) {
+        average = Number(backendAvg).toFixed(1);
+    } else {
+        const sum = data.reduce((acc, r) => acc + (Number(r.rating) || 0), 0);
+        average = total > 0 ? (sum / total).toFixed(1) : "0.0";
+    }
+    
+    // 2. Đếm phân bổ số lượng từng loại sao (luôn tính client-side)
+    const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    data.forEach(r => {
+        const star = Math.round(Number(r.rating) || 5);
+        if (distribution[star] !== undefined) distribution[star]++;
+    });
+
+    // 3. Cập nhật giao diện chính
+    if (avgDisplay) avgDisplay.innerText = average;
+    if (totalDisplay) totalDisplay.innerText = `Dựa trên ${total} lượt đánh giá`;
+
+    // 4. Cập nhật các thanh Progress Bar và con số chi tiết
+    const starsOrder = [5, 4, 3, 2, 1];
+    starsOrder.forEach((star) => {
+        const count = distribution[star];
+        const percent = total > 0 ? ((count / total) * 100).toFixed(0) : '0';
+        
+        const bar = document.getElementById(`star-${star}-bar`);
+        const label = document.getElementById(`star-${star}-count`);
+        
+        if (bar) bar.style.width = percent + '%';
+        if (label) label.innerText = count;
+    });
+}
+
+// Render danh sách reviews
+function renderReviews(reviews) {
+    const reviewsList = document.getElementById('reviews-list');
+    if (!reviewsList) return;
+
+    const data = Array.isArray(reviews) ? reviews : [];
+    
+    // Lấy thông tin current user để hiển thị nút sửa/xóa
+    let currentUserId = null;
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+        try {
+            const userObj = JSON.parse(storedUser);
+            currentUserId = userObj.userId || userObj.id;
+        } catch (e) {}
+    }
+    
+    // FIX: Luôn dọn dẹp container trước khi render để tránh lặp nội dung hoặc kẹt loading
+    reviewsList.innerHTML = '';
+
+    if (data.length === 0) {
+        reviewsList.innerHTML = `
+            <div class="text-center py-8 text-slate-400">
+                <i class="fas fa-comments text-3xl mb-2 block opacity-50"></i>
+                <p class="text-sm font-semibold">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
+            </div>
+        `;
+        return;
+    }
+
+    reviewsList.innerHTML = data.map(review => {
+        // FIX: Mapping chính xác tên từ Database. Kiểm tra cả trường phẳng và đối tượng lồng (nested user object)
+        const name = review.fullName || 
+                     (review.user && review.user.fullName) || 
+                     review.userName || 
+                     (review.user && review.user.userName) || 
+                     'Người dùng ẩn danh';
+
+        // FIX: Lấy ảnh đại diện từ database nếu có, nếu không thì dùng UI Avatars dựa trên tên thật
+        const avatar = review.userAvatar || 
+                       (review.user && review.user.avatarUrl) || 
+                       `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=f26f21&color=fff`;
+
+        const rating = Number(review.rating) || 5;
+        const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+        const date = review.createdAt ? new Date(review.createdAt).toLocaleDateString('vi-VN') : 'Vừa qua';
+        const commentText = review.comment || review.content || 'Khách hàng không để lại nhận xét.';
+
+        // Hiển thị nút Sửa/Xóa nếu là chủ sở hữu
+        const reviewUserId = review.user ? (review.user.userId || review.user.id) : review.userId;
+        const isOwner = currentUserId && reviewUserId === currentUserId;
+        
+        let actionsHtml = '';
+        if (isOwner) {
+            // Encode nội dung review để tránh lỗi dấu nháy
+            const safeComment = commentText.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            actionsHtml = `
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="editReview(${review.reviewId || review.id}, ${rating}, '${safeComment}')" class="text-xs font-semibold text-brand-purple hover:text-purple-700 transition">
+                        <i class="fas fa-edit mr-1"></i> Sửa
+                    </button>
+                    <button type="button" onclick="deleteReview(${review.reviewId || review.id})" class="text-xs font-semibold text-red-500 hover:text-red-700 transition">
+                        <i class="fas fa-trash-alt mr-1"></i> Xóa
+                    </button>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-150 hover:border-brand-orange hover:shadow-md transition">
+                <div class="flex items-start gap-3">
+                    <img src="${avatar}" alt="${review.userName}" class="w-10 h-10 rounded-full object-cover" />
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between gap-2 mb-1">
+                            <div class="flex items-center gap-2">
+                                <h4 class="text-sm font-extrabold text-slate-800">${name}</h4>
+                                <span class="text-[10px] text-slate-400 font-medium">${date}</span>
+                            </div>
+                            ${actionsHtml}
+                        </div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-yellow-400 font-bold text-sm tracking-widest">${stars}</span>
+                            <span class="text-[10px] font-bold text-slate-400 bg-slate-200 px-1.5 py-0.5 rounded-sm">${rating}/5</span>
+                        </div>
+                        <p class="text-sm text-slate-700 leading-relaxed font-medium">${commentText}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Logic Sửa Đánh giá
+let currentEditReviewId = null;
+
+window.editReview = function(reviewId, currentRating, currentComment) {
+    const form = document.getElementById('review-form');
+    if (!form) return;
+    
+    // Đẩy thông tin lên form
+    const commentInput = document.getElementById('review-comment');
+    if (commentInput) commentInput.value = currentComment;
+    
+    // Đánh dấu số sao
+    const stars = document.querySelectorAll('.star-rating');
+    stars.forEach(star => {
+        const val = parseInt(star.getAttribute('data-value'));
+        if (val <= currentRating) {
+            star.classList.remove('text-gray-300');
+            star.classList.add('text-yellow-400');
+        } else {
+            star.classList.remove('text-yellow-400');
+            star.classList.add('text-gray-300');
+        }
+    });
+    
+    const ratingInput = document.getElementById('review-rating');
+    if (ratingInput) ratingInput.value = currentRating;
+    
+    // Đổi chữ nút Submit và lưu ID đang sửa
+    const submitBtn = document.getElementById('submit-review');
+    if (submitBtn) {
+        submitBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Cập nhật đánh giá';
+    }
+    
+    currentEditReviewId = reviewId;
+    
+    // Cuộn lên form
+    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
+
+// Logic Xóa Đánh giá
+window.deleteReview = async function(reviewId) {
+    if (!confirm('Bạn có chắc chắn muốn xóa đánh giá này không?')) return;
+    
+    try {
+        await window.apiClient.delete(`/api/vtd/member/reviews/${reviewId}`);
+        alert('Đã xóa đánh giá thành công!');
+        
+        // Reload reviews
+        const eventId = new URLSearchParams(window.location.search).get('id');
+        if (eventId) {
+            await loadReviews(eventId);
+        }
+    } catch (error) {
+        console.error('Lỗi khi xóa đánh giá:', error);
+        alert('Không thể xóa đánh giá. ' + (error.message || 'Vui lòng thử lại.'));
+    }
 };
 
 // ==========================================================

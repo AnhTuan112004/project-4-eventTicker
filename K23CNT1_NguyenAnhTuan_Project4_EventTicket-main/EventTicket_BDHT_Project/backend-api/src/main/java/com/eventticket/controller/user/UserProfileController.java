@@ -2,7 +2,8 @@ package com.eventticket.controller.user;
 
 import com.eventticket.entity.G8_users;
 import com.eventticket.repository.UserRepository;
-import com.eventticket.service.UserService;
+import com.eventticket.service.user.UserService;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,7 +39,7 @@ public class UserProfileController {
     /**
      * MEMBER: Xem thông tin hồ sơ cá nhân
      */
-    @GetMapping("/api/nat/member/profile")
+    @GetMapping("/api/vtd/member/profile")
     public ResponseEntity<G8_users> getUserProfile() {
         Integer userId = getCurrentUserId();
         if (userId == null) {
@@ -51,7 +52,7 @@ public class UserProfileController {
     /**
      * MEMBER: Cập nhật thông tin hồ sơ cá nhân
      */
-    @PutMapping("/api/nat/member/profile")
+    @PutMapping("/api/vtd/member/profile")
     public ResponseEntity<G8_users> updateUserProfile(@RequestBody UpdateProfileRequest request) {
         Integer userId = getCurrentUserId();
         if (userId == null) {
@@ -67,7 +68,7 @@ public class UserProfileController {
     /**
      * MEMBER: Đổi mật khẩu tài khoản
      */
-    @PostMapping("/api/nat/member/change-password")
+    @PostMapping("/api/vtd/member/change-password")
     public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request) {
         Integer userId = getCurrentUserId();
         if (userId == null) {

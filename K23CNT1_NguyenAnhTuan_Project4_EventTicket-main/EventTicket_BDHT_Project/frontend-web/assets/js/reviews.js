@@ -30,16 +30,11 @@ async function renderReviews() {
         return;
     }
 
-    try {
-        const reviews = await window.apiClient.get('/api/nat/member/reviews');
-        reviewState.data = Array.isArray(reviews) ? reviews : [];
-        reviewState.editingId = null;
-        renderReviewItems();
-    } catch (error) {
-        console.error('Lỗi tải đánh giá:', error);
-        const message = getReviewErrorMessage(error);
-        container.innerHTML = `<div class="empty-state">${message}</div>`;
-    }
+    // FIX: Backend hiện chưa cung cấp endpoint danh sách /api/vtd/member/reviews
+    // Nên không gọi API này để tránh 404/đứt kết nối trên trang reviews.html
+    reviewState.data = [];
+    reviewState.editingId = null;
+    container.innerHTML = '<div class="empty-state">Backend chưa có API danh sách đánh giá cá nhân. Trang này chỉ có thể chỉnh sửa/xóa khi endpoint được bổ sung.</div>';
 }
 
 function renderReviewItems() {
@@ -170,7 +165,7 @@ async function saveReviewEdit(reviewId) {
     const comment = commentField.value.trim();
 
     try {
-        await window.apiClient.put(`/api/nat/member/reviews/${encodeURIComponent(reviewId)}`, {
+        await window.apiClient.put(`/api/vtd/member/reviews/${encodeURIComponent(reviewId)}`, {
             rating,
             comment,
         });
@@ -211,7 +206,7 @@ function openEventDetailModal(reviewId) {
         className: 'btn'
     });
     if (eventId) {
-        const url = `/pages/user/event-detail.html?eventId=${encodeURIComponent(eventId)}`;
+        const url = `/pages/user/event-detail.html?id=${encodeURIComponent(eventId)}`; // FIX: event-detail.js đọc query param "id"
         actions.push({ text: 'Mở trang chi tiết', action: () => window.open(url, '_blank') });
     }
     actions.push({ text: 'Đóng', action: closeModal, className: 'btn-secondary' });
@@ -276,7 +271,7 @@ function closeModal() {
 
 async function deleteReview(reviewId) {
     try {
-        await window.apiClient.delete(`/api/nat/member/reviews/${encodeURIComponent(reviewId)}`);
+        await window.apiClient.delete(`/api/vtd/member/reviews/${encodeURIComponent(reviewId)}`);
         await renderReviews();
     } catch (error) {
         console.error('Lỗi xóa đánh giá:', error);

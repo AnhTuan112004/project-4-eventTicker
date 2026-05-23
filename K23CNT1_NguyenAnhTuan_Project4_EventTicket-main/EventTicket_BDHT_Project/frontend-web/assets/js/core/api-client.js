@@ -12,6 +12,8 @@ function getFrontendBasePath() {
         return path.substring(0, markerIndex + marker.length - 1);
     }
 
+    // Khi Live Server root = /frontend-web, pathname sẽ là /pages/index.html
+    // (không chứa /frontend-web/). Trong trường hợp này, root chính là '/'
     return '';
 }
 
@@ -23,8 +25,19 @@ function resolveAppUrl(path) {
     const cleanPath = path.startsWith('./') ? path.slice(2) : path;
     const appRootRelative = cleanPath.startsWith('pages/') || cleanPath.startsWith('components/') || cleanPath.startsWith('assets/') || cleanPath === 'index.html';
 
+    if (cleanPath === 'index.html') {
+        const base = getFrontendBasePath();
+        return `${base}/pages/index.html`;
+    }
+
     if (appRootRelative) {
-        return `${getFrontendBasePath()}/${cleanPath}`;
+        const base = getFrontendBasePath();
+        // QUAN TRỌNG: Luôn trả về đường dẫn tuyệt đối (bắt đầu bằng /)
+        // để tránh bị resolve tương đối theo vị trí trang hiện tại.
+        // Ví dụ: trang ở /pages/index.html, nếu trả về 'components/header.html'
+        // trình duyệt sẽ fetch /pages/components/header.html (SAI).
+        // Phải trả về '/components/header.html' để fetch đúng.
+        return base ? `${base}/${cleanPath}` : `/${cleanPath}`;
     }
 
     return new URL(cleanPath, window.location.href).href;
@@ -70,8 +83,9 @@ class ApiClient {
             ...options
         };
 
-        // Gắn token vào header nếu có
-        if (token) {
+        // Gắn token vào header nếu có và không phải là endpoint công khai (public/auth/translations)
+        const isPublic = endpoint.includes('/public/') || endpoint.includes('/auth/') || endpoint.includes('/translations/');
+        if (token && !isPublic) {
             config.headers.Authorization = `Bearer ${token}`;
         }
 
@@ -153,64 +167,64 @@ window.pageUtils = {
     resolveUrl: resolveAppUrl,
     rewriteInternalUrls,
 
-    async initI18n() {
-        if (window.i18n) {
-            window.i18n.init();
-            return;
-        }
-
-        return new Promise((resolve) => {
-            const script = document.createElement('script');
-            script.src = this.resolveUrl('assets/js/core/i18n.js');
-            script.onload = () => {
-                if (window.i18n) {
-                    window.i18n.init();
-                }
-                resolve();
-            };
-            script.onerror = () => {
-                console.error('Lỗi khi tải động i18n.js');
-                resolve();
-            };
-            document.body.appendChild(script);
-        });
-    },
+    // Promise cache để tránh load header/footer nhiều lần
+    _headerPromise: null,
+    _footerPromise: null,
 
     async loadHeader() {
-        try {
-            const response = await fetch(this.resolveUrl('components/header.html'));
-            let headerHTML = rewriteInternalUrls(await response.text());
-            const headerContainer = document.getElementById('header-container');
-            if (headerContainer) {
-                headerContainer.innerHTML = headerHTML;
-                this.setupAuthMenu();
-                // Tự động load và khởi tạo i18n
-                await this.initI18n();
+        // Nếu đã có promise đang chạy hoặc đã hoàn thành, trả về luôn (không fetch lại)
+        if (this._headerPromise) return this._headerPromise;
+        
+        this._headerPromise = (async () => {
+            try {
+                const response = await fetch(this.resolveUrl('components/header.html'));
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                let headerHTML = rewriteInternalUrls(await response.text());
+                const headerContainer = document.getElementById('header-container');
+                if (headerContainer) {
+                    headerContainer.innerHTML = headerHTML;
+                    this.setupAuthMenu();
+                }
+            } catch (error) {
+                console.error('Lỗi khi load header:', error);
+                this._headerPromise = null; // Reset để có thể thử lại
             }
-        } catch (error) {
-            console.error('Lỗi khi load header:', error);
-        }
+        })();
+        
+        return this._headerPromise;
     },
 
  
     async loadFooter() {
+        // Nếu đã có promise đang chạy hoặc đã hoàn thành, trả về luôn (không fetch lại)
+        if (this._footerPromise) return this._footerPromise;
+        
+        this._footerPromise = (async () => {
             try {
                 const response = await fetch(this.resolveUrl('components/footer.html'));
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 let footerHTML = rewriteInternalUrls(await response.text());
                 
                 const footerContainer = document.getElementById('footer-container');
                 if (footerContainer) {
                     footerContainer.innerHTML = footerHTML;
                     this.setupFooterEvents();
-                    // Rerender language for footer after it's loaded
-                    if (window.i18n && typeof window.i18n.renderLanguage === 'function') {
-                        window.i18n.renderLanguage();
+                    
+                    // Tải script ai-chat.js nếu chưa có (để kích hoạt chatbot trên mọi trang)
+                    if (!document.querySelector('script[src*="ai-chat.js"]')) {
+                        const script = document.createElement('script');
+                        script.src = this.resolveUrl('assets/js/ai-chat.js');
+                        document.body.appendChild(script);
                     }
                 }
             } catch (error) {
                 console.error('Lỗi khi load footer:', error);
+                this._footerPromise = null; // Reset để có thể thử lại
             }
-        },
+        })();
+        
+        return this._footerPromise;
+    },
 
     setupFooterEvents() {
         const subscribeBtn = document.getElementById('subscribe-btn');

@@ -3,8 +3,12 @@ package com.eventticket.controller.user;
 import com.eventticket.entity.G8_event;
 import com.eventticket.entity.G8_event_image;
 import com.eventticket.entity.G8_venue;
-import com.eventticket.service.EventImageService;
-import com.eventticket.service.EventService;
+import com.eventticket.service.user.EventImageService;
+import com.eventticket.service.user.EventService;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +29,7 @@ public class EventController {
     /**
      * GUEST: Lấy các sự kiện nổi bật cho trang chủ
      */
-    @GetMapping("/api/nat/public/events/featured")
+    @GetMapping("/api/vtd/public/events/featured")
     public ResponseEntity<List<G8_event>> getFeaturedEvents() {
         List<G8_event> events = eventService.getFeaturedEvents();
         return ResponseEntity.ok(events);
@@ -34,16 +38,20 @@ public class EventController {
     /**
      * GUEST: Lấy danh sách toàn bộ sự kiện đã công bố
      */
-    @GetMapping("/api/nat/public/events")
-    public ResponseEntity<List<G8_event>> getAllPublishedEvents() {
-        List<G8_event> events = eventService.getAllPublishedEvents();
+    @GetMapping("/api/vtd/public/events")
+    public ResponseEntity<Page<G8_event>> getAllPublishedEvents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        // GUEST: Phân trang danh sách sự kiện. page bắt đầu từ 0.
+        Pageable pageable = PageRequest.of(page, size);
+        Page<G8_event> events = eventService.getAllPublishedEvents(pageable);
         return ResponseEntity.ok(events);
     }
 
     /**
      * GUEST: Tìm kiếm sự kiện theo tên hoặc tên nghệ sĩ
      */
-    @GetMapping("/api/nat/public/events/search")
+    @GetMapping("/api/vtd/public/events/search")
     public ResponseEntity<List<G8_event>> searchEvents(@RequestParam String keyword) {
         List<G8_event> events = eventService.searchEventsByTitle(keyword);
         return ResponseEntity.ok(events);
@@ -52,7 +60,7 @@ public class EventController {
     /**
      * GUEST: Lọc sự kiện theo danh mục
      */
-    @GetMapping("/api/nat/public/events/category/{categoryName}")
+    @GetMapping("/api/vtd/public/events/category/{categoryName}")
     public ResponseEntity<List<G8_event>> filterEventsByCategory(@PathVariable String categoryName) {
         List<G8_event> events = eventService.filterEventsByCategory(categoryName);
         return ResponseEntity.ok(events);
@@ -61,7 +69,7 @@ public class EventController {
     /**
      * GUEST: Lọc sự kiện theo khoảng thời gian
      */
-    @GetMapping("/api/nat/public/events/date-range")
+    @GetMapping("/api/vtd/public/events/date-range")
     public ResponseEntity<List<G8_event>> getEventsInTimeRange(
             @RequestParam LocalDateTime startDate,
             @RequestParam LocalDateTime endDate) {
@@ -70,9 +78,19 @@ public class EventController {
     }
 
     /**
+     * GUEST: Lọc nhanh theo thời gian.
+     * filter = upcoming | this-week | this-month
+     */
+    @GetMapping("/api/vtd/public/events/time-filter")
+    public ResponseEntity<List<G8_event>> getEventsByTimeFilter(@RequestParam String filter) {
+        List<G8_event> events = eventService.getEventsByTimeFilter(filter);
+        return ResponseEntity.ok(events);
+    }
+
+    /**
      * GUEST: Xem chi tiết sự kiện
      */
-    @GetMapping("/api/nat/public/events/{eventId}")
+    @GetMapping("/api/vtd/public/events/{eventId}")
     public ResponseEntity<G8_event> getEventDetails(@PathVariable Integer eventId) {
         G8_event event = eventService.getEventDetails(eventId);
         return ResponseEntity.ok(event);
@@ -81,7 +99,7 @@ public class EventController {
     /**
      * GUEST: Xem chi tiết địa điểm tổ chức
      */
-    @GetMapping("/api/nat/public/events/{eventId}/venue")
+    @GetMapping("/api/vtd/public/events/{eventId}/venue")
     public ResponseEntity<G8_venue> getEventVenue(@PathVariable Integer eventId) {
         G8_venue venue = eventService.getEventVenue(eventId);
         return ResponseEntity.ok(venue);
@@ -90,7 +108,7 @@ public class EventController {
     /**
      * GUEST: Xem hình ảnh sự kiện
      */
-    @GetMapping("/api/nat/public/events/{eventId}/images")
+    @GetMapping("/api/vtd/public/events/{eventId}/images")
     public ResponseEntity<List<G8_event_image>> getEventImages(@PathVariable Integer eventId) {
         List<G8_event_image> images = eventImageService.getEventImages(eventId);
         return ResponseEntity.ok(images);

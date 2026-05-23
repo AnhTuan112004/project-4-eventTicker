@@ -5,7 +5,9 @@ import com.eventticket.entity.G8_payment;
 import com.eventticket.entity.G8_users;
 import com.eventticket.repository.OrderRepository;
 import com.eventticket.repository.UserRepository;
-import com.eventticket.service.PaymentService;
+import com.eventticket.service.user.PaymentService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,7 +47,7 @@ public class PaymentController {
     /**
      * MEMBER: Tạo giao dịch thanh toán
      */
-    @PostMapping("/api/nat/member/payments")
+    @PostMapping("/api/vtd/member/payments")
     public ResponseEntity<G8_payment> createPayment(@RequestBody CreatePaymentRequest request) {
         Integer userId = getCurrentUserId();
         if (userId == null) {
@@ -55,6 +57,11 @@ public class PaymentController {
         G8_order order = orderRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new RuntimeException("Đơn hàng không tồn tại"));
 
+        // SECURITY: Member chỉ được thanh toán đơn hàng của chính mình.
+        if (order.getUser() == null || !userId.equals(order.getUser().getUserId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         G8_payment payment = paymentService.createPayment(order, request.getPaymentMethod());
         return ResponseEntity.ok(payment);
     }
@@ -62,7 +69,7 @@ public class PaymentController {
     /**
      * MEMBER: Kiểm tra trạng thái thanh toán
      */
-    @GetMapping("/api/nat/member/payments/{paymentId}")
+    @GetMapping("/api/vtd/member/payments/{paymentId}")
     public ResponseEntity<G8_payment> getPaymentStatus(@PathVariable Integer paymentId) {
         G8_payment payment = paymentService.getPaymentStatus(paymentId);
         return ResponseEntity.ok(payment);
@@ -71,7 +78,7 @@ public class PaymentController {
     /**
      * INTERNAL: Webhook - Cập nhật trạng thái thanh toán từ cổng thanh toán
      */
-    @PostMapping("/api/nat/public/payments/{paymentId}/webhook")
+    @PostMapping("/api/vtd/public/payments/{paymentId}/webhook")
     public ResponseEntity<Map<String, String>> updatePaymentStatus(
             @PathVariable Integer paymentId,
             @RequestBody PaymentWebhookRequest request) {
@@ -90,7 +97,7 @@ public class PaymentController {
     /**
      * MEMBER: Hoàn tiền (yêu cầu hoàn lại)
      */
-    @PostMapping("/api/nat/member/payments/{paymentId}/refund")
+    @PostMapping("/api/vtd/member/payments/{paymentId}/refund")
     public ResponseEntity<G8_payment> requestRefund(@PathVariable Integer paymentId) {
         G8_payment payment = paymentService.requestRefund(paymentId);
         return ResponseEntity.ok(payment);

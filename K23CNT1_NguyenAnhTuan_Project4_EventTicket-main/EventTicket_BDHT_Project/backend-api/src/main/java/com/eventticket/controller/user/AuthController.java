@@ -1,7 +1,10 @@
 package com.eventticket.controller.user;
 
 import com.eventticket.entity.G8_users;
-import com.eventticket.service.AuthService;
+import com.eventticket.security.JwtUtil;
+import com.eventticket.service.user.AuthService;
+import com.eventticket.service.user.SocialAuthService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,20 +17,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.HashMap;
 import java.util.Map;
-import com.eventticket.security.JwtUtil;
 
 @RestController
-@RequestMapping("/api/nat/public/auth")
+@RequestMapping("/api/vtd/public/auth")
 public class AuthController {
 
     @Autowired
     private AuthService authService;
-    
-    @Autowired
-    private JwtUtil jwtUtil;
 
     @Autowired
-    private com.eventticket.service.SocialAuthService socialAuthService;
+    private SocialAuthService socialAuthService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody RegisterRequest request) {
@@ -53,15 +55,10 @@ public class AuthController {
     public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
         try {
             G8_users user = authService.loginUser(request.getEmail(), request.getPassword());
-            
-            // [FIX] Tạo JWT token khi đăng nhập thành công
-            String roleStr = user.getRole() != null ? user.getRole() : "USER";
-            String token = jwtUtil.generateToken(user.getEmail(), roleStr);
-
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Đăng nhập thành công");
             response.put("user", user);
-            response.put("token", token); // Trả về token cho Frontend
+            response.put("token", jwtUtil.generateToken(user.getEmail(), user.getRole()));
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -78,14 +75,11 @@ public class AuthController {
     public ResponseEntity<Map<String, Object>> socialLogin(@RequestBody SocialLoginRequest request) {
         try {
             G8_users user = socialAuthService.loginWithProvider(request.getProvider(), request.getAccessToken());
-            
-            String roleStr = user.getRole() != null ? user.getRole() : "USER";
-            String token = jwtUtil.generateToken(user.getEmail(), roleStr);
-
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "Đăng nhập mạng xã hội thành công");
+            response.put("message", "Đăng nhập " + request.getProvider() + " thành công");
             response.put("user", user);
-            response.put("token", token);
+            response.put("token", jwtUtil.generateToken(user.getEmail(), user.getRole()));
+
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -96,6 +90,14 @@ public class AuthController {
             errorResponse.put("error", "Lỗi hệ thống: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, Object>> logout() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Đăng xuất thành công. Vui lòng xóa token ở phía client.");
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/forgot-password")
@@ -113,6 +115,27 @@ public class AuthController {
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Lỗi hệ thống: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    /**
+     * GUEST: Quên mật khẩu bằng reset link gửi qua email.
+     */
+    @PostMapping("/forgot-password-link")
+    public ResponseEntity<Map<String, Object>> forgotPasswordLink(@RequestBody ForgotPasswordRequest request) {
+        try {
+            authService.requestPasswordResetLink(request.getEmail());
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Link đặt lại mật khẩu đã được gửi đến email của bạn");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Lá»—i há»‡ thá»‘ng: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
@@ -155,6 +178,30 @@ public class AuthController {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("error", "Lỗi hệ thống: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    /**
+     * GUEST/MEMBER: Đặt lại mật khẩu mới bằng token trong reset link.
+     */
+    @PostMapping("/reset-password-token")
+    public ResponseEntity<Map<String, Object>> resetPasswordByToken(@RequestBody ResetPasswordTokenRequest request) {
+        try {
+            authService.resetPasswordByToken(request.getToken(), request.getNewPassword());
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Mật khẩu đã được đặt lại thành công!");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("error", "Lá»—i há»‡ thá»‘ng: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
@@ -225,6 +272,30 @@ public class AuthController {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    public static class SocialLoginRequest {
+        private String provider;
+        private String accessToken;
+
+        public String getProvider() {
+            return provider;
+        }
+
+        public void setProvider(String provider) {
+            this.provider = provider;
+        }
+
+        public String getAccessToken() {
+            return accessToken;
+        }
+
+        public void setAccessToken(String accessToken) {
+            this.accessToken = accessToken;
+        }
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ForgotPasswordRequest {
         private String email;
 
@@ -288,24 +359,24 @@ public class AuthController {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class SocialLoginRequest {
-        private String provider;
-        private String accessToken;
+    public static class ResetPasswordTokenRequest {
+        private String token;
+        private String newPassword;
 
-        public String getProvider() {
-            return provider;
+        public String getToken() {
+            return token;
         }
 
-        public void setProvider(String provider) {
-            this.provider = provider;
+        public void setToken(String token) {
+            this.token = token;
         }
 
-        public String getAccessToken() {
-            return accessToken;
+        public String getNewPassword() {
+            return newPassword;
         }
 
-        public void setAccessToken(String accessToken) {
-            this.accessToken = accessToken;
+        public void setNewPassword(String newPassword) {
+            this.newPassword = newPassword;
         }
     }
 }

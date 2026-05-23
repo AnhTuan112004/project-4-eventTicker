@@ -45,161 +45,188 @@
     <div id="header-placeholder"></div>
 
     <!-- Main Payment Container Layout -->
-    <main class="max-w-5xl mx-auto px-4 mt-10">
+    <main class="max-w-6xl mx-auto px-4 mt-10 pb-20">
+        <h1 class="text-3xl font-black text-slate-900 mb-8 uppercase tracking-wide">Thanh toán an toàn</h1>
         
-        <!-- Toast Notification Alert for Copying -->
-        <div id="copy-toast" class="fixed top-24 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-white font-extrabold text-xs px-5 py-2.5 rounded-full shadow-lg z-50 opacity-0 pointer-events-none transition-all duration-300">
-            <i class="fas fa-check-circle mr-1.5"></i> Đã sao chép vào bộ nhớ tạm!
+        <div id="checkout-main-grid" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left Column: User Info & Payment Methods -->
+            <div class="lg:col-span-7 flex flex-col gap-6">
+                <!-- User Info Form -->
+                <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-200">
+                    <h2 class="text-xl font-extrabold text-slate-900 mb-6 flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-brand-purple text-white flex items-center justify-center text-sm">1</span>
+                        Thông tin người đặt vé
+                    </h2>
+                    <form id="user-info-form" class="flex flex-col gap-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="flex flex-col gap-2">
+                                <label class="text-xs font-bold text-slate-500 uppercase">Họ và Tên *</label>
+                                <input type="text" id="cust-name" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20 outline-none transition-all font-semibold" placeholder="Nhập họ và tên">
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <label class="text-xs font-bold text-slate-500 uppercase">Số điện thoại *</label>
+                                <input type="tel" id="cust-phone" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20 outline-none transition-all font-semibold" placeholder="Nhập số điện thoại">
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Email nhận vé điện tử *</label>
+                            <input type="email" id="cust-email" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20 outline-none transition-all font-semibold" placeholder="Email nhận mã QR code vé">
+                            <span class="text-[11px] text-brand-orange font-medium mt-1"><i class="fas fa-info-circle mr-1"></i> Vui lòng nhập chính xác email vì vé điện tử sẽ được gửi qua email này.</span>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Payment Methods -->
+                <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-200">
+                    <h2 class="text-xl font-extrabold text-slate-900 mb-6 flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-brand-purple text-white flex items-center justify-center text-sm">2</span>
+                        Phương thức thanh toán
+                    </h2>
+                    <div id="payment-methods-wrapper" class="flex flex-col gap-4">
+                        <!-- VNPAY -->
+                        <label class="flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-200 cursor-pointer transition hover:border-brand-orange bg-white has-[:checked]:border-brand-orange has-[:checked]:bg-orange-50">
+                            <input type="radio" name="payment-method" value="VNPAY" checked class="w-5 h-5 accent-brand-orange cursor-pointer">
+                            <div class="w-12 h-12 rounded-xl bg-white shadow-sm border border-gray-100 flex items-center justify-center p-1 shrink-0">
+                                <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/6/0oxhzjmxbksr1686814746087.png" alt="VNPay" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-sm font-extrabold text-slate-900">Thanh toán qua VNPAY / Thẻ tín dụng</span>
+                                <span class="text-[11px] font-medium text-slate-500">Thanh toán an toàn qua cổng VNPAY</span>
+                            </div>
+                        </label>
+                        
+                        <!-- MOMO -->
+                        <label class="flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-200 cursor-pointer transition hover:border-brand-orange bg-white has-[:checked]:border-brand-orange has-[:checked]:bg-orange-50">
+                            <input type="radio" name="payment-method" value="MOMO" class="w-5 h-5 accent-brand-orange cursor-pointer">
+                            <div class="w-12 h-12 rounded-xl bg-white shadow-sm border border-[#c30076]/20 flex items-center justify-center p-1 shrink-0">
+                                <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" alt="MoMo" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-sm font-extrabold text-slate-900">Thanh toán qua Ví MoMo</span>
+                                <span class="text-[11px] font-medium text-slate-500">Mở app MoMo quét mã thanh toán</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Cart Summary (Sticky) -->
+            <div class="lg:col-span-5 relative">
+                <div class="lg:sticky lg:top-28 bg-white rounded-3xl p-6 shadow-2xl border border-gray-100 flex flex-col gap-6 relative z-10">
+                    
+                    <!-- Timer -->
+                    <div class="bg-red-50 border border-red-100 rounded-2xl p-4 flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-xs font-black text-red-600 uppercase tracking-wider">
+                            <i class="far fa-clock text-lg pulse-timer"></i> Thời gian giữ vé
+                        </div>
+                        <div class="text-xl font-black text-red-600 tracking-wider" id="countdown-timer">15:00</div>
+                    </div>
+
+                    <!-- Event summary -->
+                    <div class="flex flex-col gap-2">
+                        <span class="text-[10px] bg-purple-100 text-brand-purple font-extrabold px-3 py-1 rounded-full uppercase w-max tracking-wider">Tóm tắt đơn hàng</span>
+                        <h3 id="summary-event-name" class="text-base font-extrabold text-slate-900 leading-snug mt-1 line-clamp-2">Đang tải tên sự kiện...</h3>
+                    </div>
+
+                    <!-- Ticket List -->
+                    <div id="summary-ticket-list" class="flex flex-col gap-3 py-4 border-y border-gray-100">
+                        <!-- Rendered by JS -->
+                    </div>
+
+                    <!-- Promo Code -->
+                    <div id="promo-section" class="flex flex-col gap-3">
+                        <div class="text-xs font-extrabold uppercase tracking-wider text-slate-800">Mã giảm giá</div>
+                        <div id="promo-input-group" class="flex gap-2">
+                            <input type="text" id="promo-code-input" placeholder="Nhập mã giảm giá..." class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm font-bold text-slate-800 uppercase focus:border-brand-orange focus:ring-1 focus:ring-brand-orange outline-none transition-all">
+                            <button type="button" id="btn-apply-promo" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-5 py-3 rounded-xl text-xs uppercase tracking-wider transition">Áp dụng</button>
+                        </div>
+                        <div id="promo-status" class="hidden text-[11px] font-bold mt-1"></div>
+                        
+                        <!-- Applied Promo Display -->
+                        <div id="promo-applied-box" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-black text-emerald-700 uppercase"><i class="fas fa-check-circle mr-1"></i> <span id="promo-applied-code"></span></span>
+                                <span class="text-[10px] font-semibold text-emerald-600" id="promo-applied-desc"></span>
+                            </div>
+                            <button type="button" id="btn-remove-promo" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Total Block -->
+                    <div class="flex flex-col gap-2 pt-2">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="font-bold text-slate-500">Tạm tính</span>
+                            <span id="summary-subtotal" class="font-extrabold text-slate-900">0đ</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm" id="summary-discount-row" style="display: none;">
+                            <span class="font-bold text-emerald-600">Giảm giá</span>
+                            <span id="summary-discount" class="font-extrabold text-emerald-600">-0đ</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
+                            <span class="font-black uppercase text-slate-900 tracking-wider">Tổng cộng</span>
+                            <span id="summary-total" class="text-2xl md:text-3xl font-black text-brand-orange">0đ</span>
+                        </div>
+                    </div>
+
+                    <!-- Pay Button -->
+                    <button type="button" id="btn-confirm-payment" class="w-full bg-gradient-to-r from-brand-orange to-red-500 hover:from-brand-orangeHover hover:to-red-600 text-white font-black py-4 rounded-xl shadow-xl shadow-orange-500/30 uppercase tracking-widest text-sm transition-all active:scale-95 flex justify-center items-center gap-2 mt-2">
+                        Tiếp tục thanh toán <i class="fas fa-arrow-right"></i>
+                    </button>
+                    
+                    <p class="text-[10px] text-center text-slate-400 font-medium">Bằng việc thanh toán, bạn đồng ý với Điều khoản sử dụng của hệ thống.</p>
+                </div>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-150">
-            
-            <!-- Left Column (Thông tin đơn hàng) -->
-            <div class="p-6 md:p-8 flex flex-col justify-between gap-6 border-b md:border-b-0 md:border-r border-gray-200">
-                <div class="flex flex-col gap-5">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs bg-purple-100 text-brand-purple font-extrabold px-3 py-1 rounded-full uppercase">
-                            Thanh toán đơn hàng
-                        </span>
-                    </div>
-
-                    <div class="flex flex-col gap-2">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Mã đơn hàng / Order ID</span>
-                        <h2 id="payment-order-id" class="text-lg font-black text-slate-900 tracking-wide uppercase">
-                            BDHT42357
-                        </h2>
-                    </div>
-
-                    <div class="flex flex-col gap-2 pt-2 border-t border-gray-100">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tên sự kiện / Event Name</span>
-                        <p id="payment-event-name" class="text-base font-extrabold text-slate-800 leading-snug">
-                            Show diễn xiếc tre nghệ thuật Teh Dar | Bản sắc Tây Nguyên 2026
-                        </p>
-                    </div>
-
-                    <div class="flex flex-col gap-2 pt-2 border-t border-gray-100">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Số tiền cần thanh toán / Amount</span>
-                        <div id="payment-amount" class="text-2xl md:text-3xl font-black text-brand-orange">
-                            3.100.000đ
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Khối đếm ngược (Countdown timer) -->
-                <div class="bg-red-50 border border-red-100 rounded-xl p-5 flex flex-col gap-3 mt-6">
-                    <div class="flex items-center gap-2 text-xs font-bold text-red-600 uppercase tracking-wider">
-                        <i class="far fa-clock text-base pulse-timer"></i>
-                        <span>Đơn hàng sẽ hết hạn sau:</span>
-                    </div>
+        <!-- QR Payment Screen (Hidden by default) -->
+        <div id="qr-payment-screen" class="hidden flex-col items-center justify-center py-10">
+            <div class="bg-white max-w-lg w-full rounded-3xl p-8 shadow-2xl border border-gray-100 flex flex-col items-center text-center gap-6 relative overflow-hidden">
+                <!-- Decorative top bar -->
+                <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-brand-orange to-brand-purple"></div>
+                
+                <h2 class="text-2xl font-black text-slate-900 uppercase tracking-wide mt-2">Quét mã thanh toán</h2>
+                
+                <div class="bg-slate-50 p-4 rounded-2xl border border-gray-200 w-full flex flex-col items-center gap-4">
+                    <img id="qr-payment-image" src="" alt="QR Code" class="w-48 h-48 object-contain rounded-xl shadow-sm bg-white p-2 border border-gray-100">
                     
-                    <div class="flex gap-2.5 items-center">
-                        <div class="flex flex-col items-center bg-white border border-red-200 rounded-lg w-14 py-2.5 shadow-sm">
-                            <span id="timer-min" class="text-xl font-black text-slate-850">10</span>
-                            <span class="text-[8px] font-bold text-slate-400 uppercase">Phút</span>
+                    <div class="flex flex-col gap-1 w-full text-left bg-white p-3 rounded-xl border border-gray-100">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-bold text-slate-500">Số tiền:</span>
+                            <span id="qr-payment-amount" class="font-black text-brand-orange">0đ</span>
                         </div>
-                        <span class="text-xl font-black text-red-400">:</span>
-                        <div class="flex flex-col items-center bg-white border border-red-200 rounded-lg w-14 py-2.5 shadow-sm">
-                            <span id="timer-sec" class="text-xl font-black text-slate-850">00</span>
-                            <span class="text-[8px] font-bold text-slate-400 uppercase">Giây</span>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-bold text-slate-500">Nội dung CK:</span>
+                            <span id="qr-payment-memo" class="font-black text-slate-900 font-mono"></span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Nút Quay Về & Xác Nhận -->
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <a href="#" id="back-btn" class="inline-flex items-center gap-2 text-xs font-extrabold text-gray-400 hover:text-brand-purple uppercase tracking-widest transition">
-                        <i class="fas fa-arrow-left"></i> Quay về
-                    </a>
-                    <button type="button" id="btn-confirm-payment" class="bg-brand-orange hover:bg-brand-orangeHover hover:-translate-y-1 active:scale-95 text-white font-extrabold px-6 py-3 rounded-full text-sm transition-all duration-300 shadow-md shadow-brand-orange/30 flex items-center gap-2">
-                        Xác nhận đã thanh toán <i class="fas fa-check-circle"></i>
+                <div class="flex flex-col gap-3 w-full mt-2">
+                    <p class="text-[11px] font-semibold text-slate-500 mb-2">Sau khi quét mã và chuyển khoản thành công, vui lòng bấm xác nhận bên dưới để hệ thống duyệt vé.</p>
+                    <button type="button" id="btn-confirm-qr-paid" class="w-full bg-brand-purple hover:bg-indigo-600 text-white font-black py-4 rounded-xl shadow-lg shadow-purple-500/30 uppercase tracking-widest text-sm transition-all active:scale-95 flex justify-center items-center gap-2">
+                        Tôi đã thanh toán <i class="fas fa-check-circle"></i>
+                    </button>
+                    <button type="button" id="btn-cancel-qr" class="w-full bg-white hover:bg-gray-50 border-2 border-gray-200 text-slate-600 font-bold py-3.5 rounded-xl transition uppercase text-xs tracking-wider">
+                        Hủy giao dịch
                     </button>
                 </div>
             </div>
+        </div>
 
-            <!-- Right Column (Khu vực QR Code động) -->
-            <div class="flex flex-col justify-center">
-
-                <!-- 1. Giao Diện MoMo (id="momo-view") -->
-                <div id="momo-view" class="bg-[#a50064] text-white p-6 md:p-8 flex flex-col items-center justify-center gap-6 h-full min-h-[460px]">
-                    <div class="flex flex-col items-center gap-2">
-                        <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" alt="MoMo Logo" class="w-16 h-16 rounded-xl shadow-lg border border-[#c30076]" />
-                        <span class="text-xs font-black uppercase tracking-wider text-pink-100">Thanh toán qua Ví MoMo</span>
-                    </div>
-
-                    <!-- Square QR code in white backdrop -->
-                    <div class="bg-white p-4 rounded-xl shadow-2xl flex items-center justify-center border-4 border-pink-700/30">
-                        <img id="momo-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=MoMoPaymentDemo_BDHT42357_3100000" alt="MoMo QR Code" class="w-48 h-48 object-contain" />
-                    </div>
-
-                    <div class="text-center flex flex-col gap-2 max-w-xs">
-                        <p class="text-xs font-extrabold leading-normal text-white">
-                            Sử dụng App MoMo hoặc ứng dụng camera hỗ trợ QR code để quét mã thanh toán.
-                        </p>
-                        <span class="text-[9px] font-bold text-pink-200 tracking-wide">Giao dịch được mã hóa và bảo mật an toàn 100%.</span>
-                    </div>
+        <!-- Success Modal (Hidden by default) -->
+        <div id="payment-success-modal" class="fixed inset-0 bg-slate-900/80 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-white w-full max-w-md rounded-3xl p-8 flex flex-col items-center text-center shadow-2xl transform scale-95 transition-all duration-300" id="success-modal-content">
+                <div class="w-20 h-20 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center text-4xl mb-6 shadow-inner">
+                    <i class="fas fa-check"></i>
                 </div>
-
-                <!-- 2. Giao Diện Chuyển khoản Ngân hàng VietQR (id="bank-view" hidden) -->
-                <div id="bank-view" class="bg-[#f0f4ff] border-l-0 md:border-l border-gray-200 p-6 md:p-8 flex flex-col gap-6 h-full min-h-[460px] hidden">
-                    
-                    <div class="flex justify-between items-center bg-white p-3.5 rounded-xl shadow-sm border border-gray-150">
-                        <img src="https://img.vietqr.io/assets/images/vietqr.png" alt="VietQR Logo" class="h-8 object-contain" />
-                        <!-- Bank Logo (MB Bank) -->
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/2/25/Logo_MB_new.png" alt="MB Bank Logo" class="h-6 object-contain" />
-                    </div>
-
-                    <!-- Split container: Left QR, Right bank texts -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 items-center bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                        <!-- Left QR -->
-                        <div class="flex flex-col items-center justify-center bg-slate-50 p-2.5 rounded-lg border border-gray-100">
-                            <img id="bank-qr-img" src="https://img.vietqr.io/image/MB-123456789-print.png?amount=3100000&addInfo=BDHT42357&accountName=CONG%20TY%20ALADDIN" alt="VietQR Bank Code" class="w-full max-w-[170px] h-auto object-contain rounded" />
-                        </div>
-
-                        <!-- Right Text inputs with Copy triggers -->
-                        <div class="flex flex-col gap-3 text-xs">
-                            <div class="flex flex-col gap-0.5">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase">Ngân hàng</span>
-                                <span class="font-extrabold text-slate-800">MB BANK (Ngân hàng Quân Đội)</span>
-                            </div>
-
-                            <div class="flex flex-col gap-0.5">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase">Chủ tài khoản</span>
-                                <span class="font-extrabold text-slate-800">CONG TY ALADDIN</span>
-                            </div>
-
-                            <div class="flex flex-col gap-0.5 relative group">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase">Số tài khoản</span>
-                                <div class="flex items-center justify-between bg-slate-50 border border-gray-200 rounded px-2.5 py-1.5 mt-0.5">
-                                    <span id="bank-acc-no" class="font-black text-slate-900 font-mono">123456789</span>
-                                    <button type="button" onclick="copyText('bank-acc-no')" class="text-brand-purple hover:text-indigo-650 hover:scale-110 active:scale-95 transition ml-1" title="Sao chép số tài khoản">
-                                        <i class="far fa-copy"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="flex flex-col gap-0.5 relative group">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase">Nội dung chuyển khoản</span>
-                                <div class="flex items-center justify-between bg-slate-50 border border-gray-200 rounded px-2.5 py-1.5 mt-0.5">
-                                    <span id="bank-memo" class="font-black text-slate-900 font-mono uppercase">BDHT42357</span>
-                                    <button type="button" onclick="copyText('bank-memo')" class="text-brand-purple hover:text-indigo-650 hover:scale-110 active:scale-95 transition ml-1" title="Sao chép nội dung">
-                                        <i class="far fa-copy"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="text-center flex flex-col gap-1.5 max-w-sm mx-auto">
-                        <p class="text-xs font-extrabold leading-normal text-slate-650">
-                            Mở app ngân hàng để quét mã VietQR hoặc chuyển khoản thủ công.
-                        </p>
-                        <span class="text-[9px] font-bold text-slate-400 tracking-wide">Lưu ý: Chuyển khoản đúng số tiền và nội dung chuyển khoản ở trên để hệ thống tự động xác nhận đơn hàng.</span>
-                    </div>
-
-                </div>
-
+                <h3 class="text-2xl font-black text-slate-900 mb-2">Thanh toán hoàn tất!</h3>
+                <p class="text-slate-500 text-sm font-medium mb-8 leading-relaxed">
+                    Đơn hàng của bạn đang ở trạng thái Chờ Xử Lý. Vui lòng đợi Admin kiểm duyệt và gửi vé điện tử (QR Code) qua email.
+                </p>
+                <button type="button" onclick="window.location.href='profile.html'" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl transition uppercase tracking-widest text-xs">
+                    Xem Đơn Hàng Của Tôi
+                </button>
             </div>
-
         </div>
     </main>
 
