@@ -297,6 +297,73 @@ class ApiClient {
 // Khởi tạo biến toàn cục để xài ở mọi file HTML
 window.apiClient = new ApiClient();
 
+async function syncHeaderAiStatus() {
+    const pill = document.getElementById('header-ai-status-pill');
+    const dot = document.getElementById('header-ai-status-dot');
+    const text = document.getElementById('header-ai-status-text');
+    const cta = document.getElementById('header-ai-cta');
+
+    if (!pill || !dot || !text) {
+        return;
+    }
+
+    const shell = pill.parentElement;
+
+    const setInactive = (message) => {
+        pill.classList.remove('hidden');
+        pill.classList.remove('border-emerald-200', 'bg-emerald-50', 'text-emerald-700');
+        pill.classList.add('border-amber-200', 'bg-amber-50', 'text-amber-700');
+        shell?.classList.remove('from-emerald-300', 'via-emerald-200', 'to-teal-100', 'shadow-[0_0_24px_rgba(52,211,153,0.28)]');
+        shell?.classList.add('from-amber-200', 'via-orange-200', 'to-rose-200', 'shadow-[0_0_24px_rgba(251,191,36,0.32)]');
+        dot.classList.remove('bg-emerald-500');
+        dot.classList.add('bg-amber-500');
+        text.textContent = message;
+        if (cta) {
+            cta.classList.remove('hidden');
+            cta.onclick = () => {
+                if (window.openAiChatWidget) {
+                    window.openAiChatWidget();
+                }
+            };
+        }
+    };
+
+    const setActive = (message) => {
+        pill.classList.remove('hidden');
+        pill.classList.remove('border-amber-200', 'bg-amber-50', 'text-amber-700');
+        pill.classList.add('border-emerald-200', 'bg-emerald-50', 'text-emerald-700');
+        shell?.classList.remove('from-amber-200', 'via-orange-200', 'to-rose-200', 'shadow-[0_0_24px_rgba(251,191,36,0.32)]');
+        shell?.classList.add('from-emerald-300', 'via-emerald-200', 'to-teal-100', 'shadow-[0_0_24px_rgba(52,211,153,0.28)]');
+        dot.classList.remove('bg-amber-500');
+        dot.classList.add('bg-emerald-500');
+        text.textContent = message;
+        if (cta) {
+            cta.classList.add('hidden');
+        }
+    };
+
+    try {
+        if (!window.apiClient) {
+            setInactive('AI BDHT chưa được bật • bạn vẫn có thể mua vé thủ công');
+            return;
+        }
+
+        const status = await window.apiClient.get('/api/vtd/public/ai-chat/status');
+        const configured = status?.configured === true;
+        const provider = status?.provider || 'openai';
+        const model = status?.model || '';
+
+        if (configured) {
+            setActive(`AI BDHT đang hoạt động • ${provider.toUpperCase()}${model ? ` • ${model}` : ''}`);
+        } else {
+            setInactive('AI BDHT chưa được bật • bạn vẫn có thể mua vé thủ công');
+        }
+    } catch (error) {
+        console.error('Không thể tải trạng thái AI trên header:', error);
+        setInactive('AI BDHT chưa sẵn sàng • bạn vẫn có thể tiếp tục mua vé');
+    }
+}
+
 window.pageUtils = {
     getBasePath: getFrontendBasePath,
     resolveUrl: resolveAppUrl,
@@ -325,6 +392,7 @@ window.pageUtils = {
                     this.populateHeaderNavigation(),
                     this.populateHeaderLocationFilter()
                 ]);
+                await syncHeaderAiStatus();
             } catch (error) {
                 console.error('Lỗi khi load header:', error);
                 this._headerPromise = null;

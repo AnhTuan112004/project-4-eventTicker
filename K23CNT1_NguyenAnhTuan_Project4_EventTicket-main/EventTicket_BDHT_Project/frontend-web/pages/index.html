@@ -83,6 +83,28 @@
                             <a id="hero-slide-0-cta" href=""
                                 class="bg-gradient-to-r from-orange-500 to-rose-500 hover:scale-105 active:scale-95 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 text-sm uppercase tracking-wider inline-block shadow-[0_8px_30px_rgb(242,111,33,0.3)]">Mua
                                 Vé Ngay <i class="fas fa-arrow-right ml-2"></i></a>
+                            <div id="hero-ai-status-container" class="mt-5 hidden">
+                                <div class="ai-status-shell rounded-full bg-gradient-to-r from-amber-200 via-orange-200 to-rose-200 p-[1px] shadow-[0_0_30px_rgba(251,191,36,0.28)] transition-all duration-300">
+                                    <div id="hero-ai-status-pill"
+                                        class="inline-flex flex-wrap items-center gap-3 rounded-full border border-white/35 bg-white/12 backdrop-blur px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(15,23,42,0.28)]">
+                                        <div class="flex items-center gap-2">
+                                            <span id="hero-ai-status-dot"
+                                                class="inline-block h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                                            <span class="inline-flex items-center gap-1.5">
+                                                <i class="fas fa-robot text-[11px]"></i>
+                                                <span id="hero-ai-status-text">Đang kiểm tra trợ lý AI...</span>
+                                            </span>
+                                        </div>
+                                        <button id="hero-ai-cta" type="button"
+                                            class="hidden items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold text-slate-900 shadow-[0_8px_20px_rgba(255,255,255,0.18)] transition-all duration-300 hover:scale-105 hover:-translate-y-0.5">
+                                            <span class="inline-flex h-4 w-4 items-center justify-center rounded-full bg-slate-950/10">
+                                                <i class="fas fa-bolt text-[9px]"></i>
+                                            </span>
+                                            <span>Bật AI ngay</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -257,123 +279,6 @@
     </main>
 
     <div id="footer-container" class="bg-white border-t border-gray-100 pt-16"></div>
-
-    <!-- ===================== CHAT WIDGET ===================== -->
-    <button id="chat-widget-fab" type="button"
-        class="fixed bottom-8 right-8 w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 text-white flex items-center justify-center shadow-2xl shadow-orange-500/30 z-[1000] border-none cursor-pointer outline-none transition-all duration-300 hover:scale-110 active:scale-95">
-        <i id="fab-chat-icon" class="fas fa-crow text-2xl"></i>
-        <i id="fab-close-icon" class="fas fa-times text-2xl hidden"></i>
-    </button>
-
-    <div id="chat-popup-container"
-        class="hidden fixed bottom-28 right-8 w-[380px] h-[580px] bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-100 flex flex-col overflow-hidden z-[1000] transition duration-300 transform origin-bottom-right">
-        <div id="chat-home-view" class="flex-1 flex flex-col relative bg-gray-50">
-            <div
-                class="bg-gradient-to-r from-orange-500 to-rose-500 text-white px-8 pt-10 pb-20 flex flex-col gap-3 rounded-b-[2.5rem] relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mt-10 -mr-10"></div>
-                <h3 class="text-2xl font-extrabold tracking-tight flex items-center gap-2 relative z-10"
-                    data-i18n="chat.welcome">Xin chào! 👋</h3>
-                <p class="text-sm font-medium opacity-90 leading-relaxed relative z-10" data-i18n="chat.welcome_desc">
-                    Chào mừng bạn đến với BDHT Assistant. Trợ lý AI của chúng tôi sẵn sàng giải đáp mọi thắc mắc ngay
-                    lập tức!</p>
-            </div>
-            <div class="px-6 -mt-12 relative z-10">
-                <button type="button" id="start-conversation-btn"
-                    class="w-full bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-gray-100 p-6 text-left flex items-center justify-between hover:border-orange-500 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer outline-none group">
-                    <div class="flex flex-col gap-1.5">
-                        <span class="text-sm font-bold text-gray-900 transition" data-i18n="chat.start_btn">Bắt đầu trò
-                            chuyện</span>
-                        <span class="text-xs text-gray-500 font-medium" data-i18n="chat.start_btn_desc">Phản hồi ngay
-                            trong vài giây</span>
-                    </div>
-                    <div
-                        class="w-12 h-12 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center shadow-sm group-hover:bg-orange-500 group-hover:text-white transition duration-300">
-                        <i class="fas fa-paper-plane"></i></div>
-                </button>
-            </div>
-            <div class="flex-1 px-6 py-8 flex flex-col gap-4 overflow-y-auto">
-                <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-start gap-4">
-                    <div
-                        class="w-10 h-10 rounded-full bg-purple-50 text-brand-purple flex items-center justify-center text-sm shadow-sm flex-shrink-0">
-                        <i class="fas fa-crow"></i></div>
-                    <div class="flex flex-col gap-1 pt-0.5">
-                        <span class="text-sm font-bold text-gray-900" data-i18n="chat.helper_title">Bạn đang tìm sự kiện
-                            nào?</span>
-                        <span class="text-xs text-gray-500 font-medium leading-relaxed" data-i18n="chat.helper_desc">Hãy
-                            hỏi tôi về các liveshow nổi bật, giá vé, hoặc các ưu đãi mới nhất!</span>
-                    </div>
-                </div>
-                <div class="mt-2 flex flex-col gap-3">
-                    <div class="flex items-center justify-between px-1">
-                        <h4 class="text-xs font-black text-gray-800 uppercase tracking-wider"
-                            data-i18n="chat.history_title">Lịch sử trò chuyện</h4>
-                        <button type="button" id="btn-refresh-history"
-                            class="text-brand-orange hover:text-brand-orangeHover transition-colors"><i
-                                class="fas fa-sync-alt text-xs"></i></button>
-                    </div>
-                    <div id="chat-history-container" class="flex flex-col gap-2">
-                        <div class="text-center py-4 text-[10px] font-bold text-gray-400"
-                            data-i18n="chat.history_loading">Đang tải lịch sử...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="chat-messages-view" class="hidden flex-1 flex bg-gray-50 relative h-full">
-            <!-- Sidebar Lịch sử Chat -->
-            <div id="chat-sidebar" class="w-64 border-r border-gray-200 bg-white flex flex-col hidden sm:flex">
-                <div class="p-4 border-b border-gray-100 flex items-center justify-between">
-                    <h4 class="text-xs font-black text-gray-800 uppercase tracking-wider" data-i18n="chat.history_title">Phiên trò chuyện</h4>
-                    <button type="button" id="btn-new-session" class="w-7 h-7 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center hover:bg-brand-orange hover:text-white transition shadow-sm" title="Tạo phiên mới">
-                        <i class="fas fa-plus text-xs"></i>
-                    </button>
-                </div>
-                <div id="chat-sidebar-sessions" class="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
-                    <!-- Danh sách phiên (được load qua JS) -->
-                    <div class="text-center py-4 text-[10px] font-bold text-gray-400">
-                        <i class="fas fa-spinner fa-spin mr-1"></i> Đang tải...
-                    </div>
-                </div>
-            </div>
-
-            <!-- Khu vực chat chính -->
-            <div class="flex-1 flex flex-col relative h-full max-h-full min-w-0">
-                <div class="bg-white text-gray-800 px-4 sm:px-6 py-4 flex items-center shadow-sm border-b border-gray-100 z-10 gap-3">
-                    <button type="button" id="btn-toggle-sidebar" class="sm:hidden w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors border-none outline-none">
-                        <i class="fas fa-bars text-sm"></i>
-                    </button>
-                    <button type="button" id="chat-back-to-home" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors border-none cursor-pointer outline-none">
-                        <i class="fas fa-chevron-left text-sm"></i>
-                    </button>
-                    <div class="font-bold text-sm tracking-wide flex-1" data-i18n="chat.agent_name">BDHT Assistant</div>
-                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                </div>
-                
-                <div id="chat-messages-box" class="flex-1 p-4 sm:p-6 overflow-y-auto flex flex-col gap-4 text-sm font-medium text-gray-600">
-                    <div class="flex gap-3 items-start">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-orange-400 to-rose-400 text-white flex items-center justify-center flex-shrink-0 font-bold shadow-sm">
-                            <i class="fas fa-crow text-xs"></i>
-                        </div>
-                        <div class="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm max-w-[85%] leading-relaxed rounded-tl-sm text-gray-700" data-i18n="chat.agent_welcome_msg">
-                            Xin chào! Tôi là BDHT Assistant. Bạn cần hỗ trợ đặt vé hay tìm kiếm sự kiện nào hôm nay?
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="p-4 bg-white border-t border-gray-100 flex gap-3 items-center">
-                    <input type="text" id="chat-input-field" placeholder="Gửi tin nhắn..." data-i18n-placeholder="chat.input_placeholder" class="flex-1 px-5 py-3 border border-gray-200 rounded-full text-sm font-medium focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20 outline-none bg-gray-50 transition-all text-gray-800" />
-                    <button type="button" id="chat-send-btn" class="w-11 h-11 rounded-full bg-gray-900 hover:bg-brand-purple text-white flex items-center justify-center border-none cursor-pointer shadow-md transition-colors">
-                        <i class="fas fa-paper-plane text-sm"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-gray-50 border-t border-gray-100 text-center py-2 flex items-center justify-center gap-1.5 text-[9px] font-bold text-gray-400 uppercase tracking-widest"
-            data-i18n="chat.powered_by">
-            <i class="fas fa-bolt text-yellow-500"></i> Powered by BDHT AI
-        </div>
-    </div>
 
     <!-- =====================================================================
          TEMPLATES — Không hiển thị trên UI, chỉ dùng bởi home.js

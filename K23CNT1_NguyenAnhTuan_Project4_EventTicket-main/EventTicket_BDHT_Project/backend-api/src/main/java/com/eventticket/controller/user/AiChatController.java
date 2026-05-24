@@ -60,14 +60,12 @@ public class AiChatController {
     public ResponseEntity<ChatMessageResponse> sendMessage(@RequestBody SendMessageRequest request) {
         Integer userId = getCurrentUserId();
 
-        // Lưu tin nhắn của user
         G8_AiChatLog userMessage = aiChatService.saveUserMessage(
                 userId != null ? userRepository.findById(userId).orElse(null) : null,
                 request.getSessionCode(),
                 request.getMessage());
 
-        // Mô phỏng response từ AI (trong thực tế, gọi API AI thực tế ở đây)
-        String aiResponse = generateAiResponse(request.getMessage());
+        String aiResponse = aiChatService.generateAiResponse(request.getMessage());
 
         G8_AiChatLog aiMessage = aiChatService.saveAiResponse(
                 userId != null ? userRepository.findById(userId).orElse(null) : null,
@@ -78,6 +76,16 @@ public class AiChatController {
         response.setUserMessage(userMessage);
         response.setAiResponse(aiMessage);
 
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/api/vtd/public/ai-chat/status")
+    public ResponseEntity<Map<String, Object>> getAiStatus() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("provider", aiChatService.getProviderName());
+        response.put("configured", aiChatService.isConfigured());
+        response.put("model", aiChatService.getResolvedModel());
+        response.put("statusText", aiChatService.getStatusText());
         return ResponseEntity.ok(response);
     }
 
@@ -114,14 +122,6 @@ public class AiChatController {
         }
         List<String> sessions = aiChatService.getUserSessions(userId);
         return ResponseEntity.ok(sessions);
-    }
-
-    /**
-     * Mô phỏng response từ AI (cần replace bằng API AI thực tế)
-     */
-    private String generateAiResponse(String userMessage) {
-        // TODO: Gọi API AI thực tế (OpenAI, Gemini, v.v.)
-        return "Xin cảm ơn câu hỏi của bạn. Tôi đang xử lý yêu cầu của bạn: " + userMessage;
     }
 
     /**

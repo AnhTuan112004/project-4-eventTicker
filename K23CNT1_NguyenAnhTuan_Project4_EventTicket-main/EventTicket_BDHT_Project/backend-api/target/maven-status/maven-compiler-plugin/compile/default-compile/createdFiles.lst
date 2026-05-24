@@ -68,6 +68,7 @@ com\eventticket\repository\ReviewRepository.class
 com\eventticket\repository\TicketRepository.class
 com\eventticket\repository\EventRepository.class
 com\eventticket\repository\OrderItemRepository.class
+com\eventticket\config\AiChatProperties.class
 com\eventticket\entity\G8_AiChatLog.class
 com\eventticket\entity\G8_users.class
 com\eventticket\entity\G8_event.class

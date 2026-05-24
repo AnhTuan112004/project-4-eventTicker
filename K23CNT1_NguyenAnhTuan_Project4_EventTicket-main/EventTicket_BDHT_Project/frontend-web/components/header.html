@@ -25,6 +25,27 @@
 
         <!-- User Actions & Language -->
         <div class="flex items-center gap-6">
+            <div class="hidden md:block">
+                <div class="ai-status-shell rounded-full bg-gradient-to-r from-amber-200 via-orange-200 to-rose-200 p-[1px] shadow-[0_0_24px_rgba(251,191,36,0.32)] transition-all duration-300">
+                    <div id="header-ai-status-pill"
+                        class="hidden md:flex items-center gap-3 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-bold text-amber-700 shadow-sm whitespace-nowrap">
+                        <div class="flex items-center gap-2">
+                            <span id="header-ai-status-dot" class="inline-block h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+                            <span class="inline-flex items-center gap-1.5">
+                                <i class="fas fa-robot text-[10px]"></i>
+                                <span id="header-ai-status-text">Đang kiểm tra trợ lý AI...</span>
+                            </span>
+                        </div>
+                        <button id="header-ai-cta" type="button"
+                            class="hidden group items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400 px-2.5 py-1 text-[10px] font-bold text-slate-950 shadow-[0_8px_20px_rgba(249,115,22,0.28)] transition-all duration-300 hover:scale-105 hover:-translate-y-0.5">
+                            <span class="inline-flex h-4 w-4 items-center justify-center rounded-full bg-slate-950/10">
+                                <i class="fas fa-bolt text-[9px]"></i>
+                            </span>
+                            <span>Bật AI ngay</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <div class="w-px h-6 bg-gray-200"></div>
 

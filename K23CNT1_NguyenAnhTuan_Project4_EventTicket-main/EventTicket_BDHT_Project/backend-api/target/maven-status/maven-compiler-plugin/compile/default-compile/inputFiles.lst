@@ -33,6 +33,7 @@ C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTi
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\controller\user\TicketController.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\security\JwtAuthenticationFilter.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\controller\user\OrderController.java
+C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\config\AiChatProperties.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\config\MailConfig.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\entity\G8_ticketType.java
 C:\K23CNT1\Project4\project-4-eventTicker\K23CNT1_NguyenAnhTuan_Project4_EventTicket-main\EventTicket_BDHT_Project\backend-api\src\main\java\com\eventticket\repository\OrderRepository.java

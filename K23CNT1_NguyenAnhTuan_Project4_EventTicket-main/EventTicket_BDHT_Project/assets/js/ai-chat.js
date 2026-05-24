@@ -1,3 +1,22 @@
+window.openAiChatWidget = async function () {
+    const fab = document.getElementById('chat-widget-fab');
+    if (fab) {
+        fab.click();
+        return true;
+    }
+
+    if (window.pageUtils && window.pageUtils.loadFooter) {
+        await window.pageUtils.loadFooter();
+        const retryFab = document.getElementById('chat-widget-fab');
+        if (retryFab) {
+            retryFab.click();
+            return true;
+        }
+    }
+
+    return false;
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Nếu có hàm pageUtils, load Header/Footer dùng chung
     if (window.pageUtils && window.pageUtils.loadHeader) {
@@ -56,7 +75,173 @@ async function initAiChat() {
     const chatInput = document.getElementById('chat-input-field');
     const chatSendBtn = document.getElementById('chat-send-btn');
     const chatBox = document.getElementById('chat-messages-box');
-    
+
+    const contextualHints = {
+        booking: {
+            title: 'Bạn đang đặt vé',
+            description: 'Hỏi tôi về loại vé, số lượng, thời gian sự kiện, hoặc để tôi hướng dẫn từng bước đặt vé nhanh và rõ ràng.',
+            placeholder: 'Hỏi về đặt vé, loại vé hoặc bước tiếp theo...'
+        },
+        payment: {
+            title: 'Bạn đang thanh toán',
+            description: 'Hỏi tôi về phương thức thanh toán, trạng thái đơn hàng, mã đơn, hoặc cách tiếp tục thanh toán khi gặp sự cố.',
+            placeholder: 'Hỏi về thanh toán, mã đơn hoặc lỗi giao dịch...'
+        },
+        reset: {
+            title: 'Bạn đang quên mật khẩu',
+            description: 'Hỏi tôi về gửi liên kết đặt lại, kiểm tra email spam, hoặc xử lý lỗi đổi mật khẩu.',
+            placeholder: 'Hỏi về quên mật khẩu hoặc đặt lại mật khẩu...'
+        },
+        guest: {
+            title: 'Khách vãng lai',
+            description: 'Hỏi tôi về đăng ký tài khoản, đăng nhập, tìm sự kiện, lọc theo địa điểm/ngày, hoặc xem ưu đãi và hướng dẫn đặt vé.',
+            placeholder: 'Hỏi về đăng ký, đăng nhập hoặc tìm sự kiện...'
+        },
+        discovery: {
+            title: 'Bạn đang khám phá sự kiện',
+            description: 'Hỏi tôi về sự kiện nổi bật, loại sự kiện, địa điểm, ngày, ngân sách hoặc gợi ý phù hợp cho bạn.',
+            placeholder: 'Tìm sự kiện theo loại, địa điểm hoặc ưu đãi...'
+        }
+    };
+
+    const headerContainer = chatBackBtn ? chatBackBtn.parentElement : null;
+    let aiStatusPill = null;
+    let aiStatusText = null;
+
+    function ensureAiStatusBadge() {
+        if (!headerContainer) {
+            return null;
+        }
+
+        let badge = document.getElementById('ai-status-pill');
+        if (!badge) {
+            badge = document.createElement('div');
+            badge.id = 'ai-status-pill';
+            badge.className = 'flex items-center gap-2 rounded-full px-3 py-1 bg-amber-50 text-amber-700 border border-amber-100 text-[11px] font-bold hidden';
+            badge.innerHTML = `
+                <span class="inline-flex h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <span id="ai-status-text">AI chưa được cấu hình</span>
+            `;
+            headerContainer.appendChild(badge);
+        }
+
+        aiStatusPill = badge;
+        aiStatusText = document.getElementById('ai-status-text');
+        return badge;
+    }
+
+    function setAiStatusMode(isActive, text) {
+        if (!aiStatusPill || !aiStatusText) {
+            return;
+        }
+
+        aiStatusText.textContent = text || 'AI chưa được cấu hình';
+        aiStatusPill.classList.remove('hidden');
+
+        if (isActive) {
+            aiStatusPill.classList.remove('bg-amber-50', 'text-amber-700', 'border-amber-100');
+            aiStatusPill.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-100');
+            aiStatusPill.querySelector('span')?.classList.remove('bg-amber-500');
+            aiStatusPill.querySelector('span')?.classList.add('bg-emerald-500');
+        } else {
+            aiStatusPill.classList.remove('bg-emerald-50', 'text-emerald-700', 'border-emerald-100');
+            aiStatusPill.classList.add('bg-amber-50', 'text-amber-700', 'border-amber-100');
+            aiStatusPill.querySelector('span')?.classList.remove('bg-emerald-500');
+            aiStatusPill.querySelector('span')?.classList.add('bg-amber-500');
+        }
+    }
+
+    async function syncAiStatus() {
+        const badge = ensureAiStatusBadge();
+        if (!badge) {
+            return;
+        }
+
+        try {
+            if (!window.apiClient) {
+                setAiStatusMode(false, 'AI chưa được cấu hình');
+                return;
+            }
+
+            const status = await window.apiClient.get('/api/vtd/public/ai-chat/status');
+            const configured = status?.configured === true;
+            setAiStatusMode(configured, status?.statusText || (configured ? 'AI thật đang hoạt động' : 'AI chưa được cấu hình'));
+        } catch (error) {
+            console.error('Không thể tải trạng thái AI:', error);
+            setAiStatusMode(false, 'AI chưa sẵn sàng');
+        }
+    }
+
+    function getFriendlyFallbackMessage() {
+        return 'AI hiện chưa được bật trên hệ thống, nhưng bạn vẫn có thể dùng trợ lý này để đăng ký/đăng nhập, tìm sự kiện, và làm quen với quy trình đặt vé. Nếu muốn bật AI thật, hãy cấu hình AI_CHAT_API_KEY và provider (openai, azure-openai hoặc gemini), sau đó khởi động lại backend.';
+    }
+
+    function getCurrentContextHint() {
+        const pathname = window.location.pathname.toLowerCase();
+
+        if (
+            pathname.includes('login.html') ||
+            pathname.includes('register.html') ||
+            pathname.includes('/login') ||
+            pathname.includes('/register')
+        ) {
+            return contextualHints.guest;
+        }
+
+        if (
+            pathname.includes('all-events.html') ||
+            pathname.includes('venues.html') ||
+            pathname.includes('index.html') ||
+            pathname === '/' ||
+            pathname.includes('/all-events') ||
+            pathname.includes('/venues')
+        ) {
+            return contextualHints.discovery;
+        }
+
+        if (pathname.includes('payment.html') || pathname.includes('/payment')) {
+            return contextualHints.payment;
+        }
+
+        if (
+            pathname.includes('forgot-password-link.html') ||
+            pathname.includes('reset-password.html') ||
+            pathname.includes('reset-password-token.html') ||
+            pathname.includes('/forgot-password') ||
+            pathname.includes('/reset-password')
+        ) {
+            return contextualHints.reset;
+        }
+
+        if (
+            pathname.includes('event-detail.html') ||
+            pathname.includes('cart.html') ||
+            pathname.includes('/event-detail') ||
+            pathname.includes('/cart')
+        ) {
+            return contextualHints.booking;
+        }
+
+        return contextualHints.guest;
+    }
+
+    function applyContextualHints() {
+        const context = getCurrentContextHint();
+        const helperCard = homeView?.querySelector('.bg-white.rounded-2xl.p-5');
+        const helperTitle = helperCard?.querySelector('span.text-sm.font-bold');
+        const helperDesc = helperCard?.querySelector('span.text-xs.text-gray-500.font-medium.leading-relaxed');
+
+        if (context && helperTitle && helperDesc) {
+            helperTitle.textContent = context.title;
+            helperDesc.textContent = context.description;
+        }
+
+        if (chatInput) {
+            chatInput.placeholder = context?.placeholder || 'Gửi tin nhắn...';
+            chatInput.title = context?.description || '';
+        }
+    }
+
     let sessionCode = "";
 
     // ==========================================
@@ -106,6 +291,7 @@ async function initAiChat() {
     const switchToChatView = () => {
         homeView.classList.add('hidden');
         chatView.classList.remove('hidden');
+        applyContextualHints();
         
         // Active Navigation highlights
         navBtnMessages.classList.add('text-orange-500');
@@ -123,6 +309,8 @@ async function initAiChat() {
     if (chatBackBtn) chatBackBtn.addEventListener('click', switchToHomeView);
     if (navBtnHome) navBtnHome.addEventListener('click', switchToHomeView);
     if (navBtnMessages) navBtnMessages.addEventListener('click', switchToChatView);
+
+    applyContextualHints();
 
     // ==========================================
     // C. SESSION GENERATION & CHAT CORE LOGIC
@@ -156,6 +344,21 @@ async function initAiChat() {
         // 1. Render tin nhắn User
         appendMessage('user', message);
         chatInput.value = '';
+
+        try {
+            if (!window.apiClient) {
+                appendMessage('ai', getFriendlyFallbackMessage());
+                return;
+            }
+
+            const status = await window.apiClient.get('/api/vtd/public/ai-chat/status');
+            if (status?.configured !== true) {
+                appendMessage('ai', getFriendlyFallbackMessage());
+                return;
+            }
+        } catch (error) {
+            console.warn('Không thể kiểm tra trạng thái AI trước khi gửi tin nhắn:', error);
+        }
 
         // 2. Tạo session nếu chưa có
         if (!sessionCode) {
@@ -236,7 +439,9 @@ async function initAiChat() {
             }
         });
     }
-    
+
+    await syncAiStatus();
+
     const btnRefreshHistory = document.getElementById('btn-refresh-history');
     if (btnRefreshHistory) {
         btnRefreshHistory.addEventListener('click', loadChatHistory);

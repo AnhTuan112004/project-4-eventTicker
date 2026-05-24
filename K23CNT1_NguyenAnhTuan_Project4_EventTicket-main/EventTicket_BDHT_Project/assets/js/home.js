@@ -31,6 +31,8 @@ async function initializeHomePage() {
     if (window.pageUtils && window.pageUtils.loadHeader) {
         await window.pageUtils.loadHeader();
     }
+
+    await syncHeroAiStatus();
     
     // 1. Setup Filter Event Listeners
     setupAllEventsSection();
@@ -40,6 +42,77 @@ async function initializeHomePage() {
 
     if (window.pageUtils && window.pageUtils.loadFooter) {
         await window.pageUtils.loadFooter();
+    }
+}
+
+async function syncHeroAiStatus() {
+    const container = document.getElementById('hero-ai-status-container');
+    const pill = document.getElementById('hero-ai-status-pill');
+    const dot = document.getElementById('hero-ai-status-dot');
+    const text = document.getElementById('hero-ai-status-text');
+    const cta = document.getElementById('hero-ai-cta');
+
+    if (!container || !pill || !dot || !text) {
+        return;
+    }
+
+    const shell = pill.parentElement;
+
+    const setInactive = (message) => {
+        container.classList.remove('hidden');
+        pill.classList.remove('border-white/35', 'bg-white/12');
+        pill.classList.add('border-amber-200', 'bg-amber-50');
+        shell?.classList.remove('from-emerald-300', 'via-emerald-200', 'to-teal-100', 'shadow-[0_0_30px_rgba(52,211,153,0.28)]');
+        shell?.classList.add('from-amber-200', 'via-orange-200', 'to-rose-200', 'shadow-[0_0_30px_rgba(251,191,36,0.28)]');
+        dot.classList.remove('bg-amber-400');
+        dot.classList.add('bg-amber-500');
+        text.className = 'text-amber-900 font-bold';
+        text.textContent = message;
+        if (cta) {
+            cta.classList.remove('hidden');
+            cta.onclick = () => {
+                if (window.openAiChatWidget) {
+                    window.openAiChatWidget();
+                }
+            };
+        }
+    };
+
+    const setActive = (message) => {
+        container.classList.remove('hidden');
+        pill.classList.remove('border-amber-200', 'bg-amber-50', 'text-amber-900');
+        pill.classList.add('border-emerald-200', 'bg-emerald-50');
+        shell?.classList.remove('from-amber-200', 'via-orange-200', 'to-rose-200', 'shadow-[0_0_30px_rgba(251,191,36,0.28)]');
+        shell?.classList.add('from-emerald-300', 'via-emerald-200', 'to-teal-100', 'shadow-[0_0_30px_rgba(52,211,153,0.28)]');
+        dot.classList.remove('bg-amber-400');
+        dot.classList.add('bg-emerald-500');
+        text.className = 'text-emerald-900 font-bold';
+        text.textContent = message;
+        if (cta) {
+            cta.classList.add('hidden');
+        }
+    };
+
+    try {
+        if (!window.apiClient) {
+            setInactive('AI BDHT chưa được bật • bạn vẫn có thể mua vé thủ công');
+            return;
+        }
+
+        const status = await window.apiClient.get('/api/vtd/public/ai-chat/status');
+
+        const configured = status?.configured === true;
+        const provider = status?.provider || 'openai';
+        const model = status?.model || '';
+
+        if (configured) {
+            setActive(`AI BDHT đang hoạt động • ${provider.toUpperCase()}${model ? ` • ${model}` : ''}`);
+        } else {
+            setInactive('AI BDHT chưa được bật • bạn vẫn có thể mua vé thủ công');
+        }
+    } catch (error) {
+        console.error('Không thể tải trạng thái AI ở hero:', error);
+        setInactive('AI BDHT chưa sẵn sàng • bạn vẫn có thể tiếp tục mua vé');
     }
 }
 
