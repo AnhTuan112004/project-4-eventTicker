@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * DỰ ÁN HỆ THỐNG ĐẶT VÉ SỰ KIỆN BDHT - PHÂN HỆ KHÁCH HÀNG (MEMBER/GUEST)
  * FILE: payment.js
@@ -46,6 +46,11 @@ async function loadPaymentData() {
     const paymentFormSection = document.getElementById('payment-form-section');
 
     if (!paymentInfo || !paymentFormSection) return;
+
+    // SỬA LỖI TẠO ĐƠN TRÙNG LẶP: Nếu phát hiện có dữ liệu checkout mới ở sessionStorage, bắt buộc giải phóng currentOrderId cũ
+    if (sessionStorage.getItem('checkoutData') || sessionStorage.getItem('pendingCheckout')) {
+        localStorage.removeItem('currentOrderId');
+    }
 
     try {
         // Lấy hoặc tạo đơn hàng thanh toán từ dữ liệu giỏ hàng lưu ở LocalStorage
@@ -198,6 +203,13 @@ async function getOrCreatePaymentOrder() {
 
     // Lưu mã đơn hàng thành công vào localStorage để theo dõi
     localStorage.setItem('currentOrderId', orderId);
+    
+    // Dọn sạch dữ liệu checkout tạm thời để tránh lặp đơn khi F5 reload
+    sessionStorage.removeItem('checkoutData');
+    sessionStorage.removeItem('pendingCheckout');
+    localStorage.removeItem('checkoutData');
+    localStorage.removeItem('pendingCheckout');
+    
     return String(orderId);
 }
 

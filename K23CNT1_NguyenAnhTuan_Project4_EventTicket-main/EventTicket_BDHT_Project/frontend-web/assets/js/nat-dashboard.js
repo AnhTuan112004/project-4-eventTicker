@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * DỰ ÁN HỆ THỐNG ĐẶT VÉ SỰ KIỆN BDHT - PHÂN HỆ KHÁCH HÀNG (MEMBER)
  * FILE: dashboard.js
@@ -44,7 +44,8 @@ function setupMainTabNavigation() {
         dashboard: document.getElementById('menu-btn-dashboard'),
         tickets: document.getElementById('menu-btn-tickets'),
         customization: document.getElementById('menu-btn-customization'),
-        reports: document.getElementById('menu-btn-reports')
+        reports: document.getElementById('menu-btn-reports'),
+        sell: document.getElementById('menu-btn-sell')
     };
 
     // Bản đồ ánh xạ tới các phần chứa nội dung tương ứng bên tay phải
@@ -52,7 +53,8 @@ function setupMainTabNavigation() {
         dashboard: document.getElementById('tab-dashboard'),
         tickets: document.getElementById('tab-tickets'),
         customization: document.getElementById('tab-customization'),
-        reports: document.getElementById('tab-reports')
+        reports: document.getElementById('tab-reports'),
+        sell: document.getElementById('tab-sell')
     };
 
     /**
@@ -175,15 +177,6 @@ function setupCustomizationViews() {
             }
         });
     }
-
-    // Submit lưu thông tin Nhà Tổ Chức (Dành cho bản vẽ Demo Mock-up)
-    if (orgForm) {
-        orgForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            alert('🎉 Chúc mừng! Đã đăng ký thêm mới Nhà tổ chức sự kiện thành công lên hệ thống quản lý.');
-            closeForm();
-        });
-    }
 }
 
 /**
@@ -193,35 +186,107 @@ function setupCustomizationViews() {
  */
 async function loadDashboardMetrics() {
     try {
-        // Lấy danh sách toàn bộ hóa đơn đơn hàng của thành viên hiện tại
-        const ordersResponse = await window.apiClient.get('/api/vtd/member/orders');
+        // 1. Lấy danh sách toàn bộ hóa đơn đơn hàng & danh sách vé điện tử thực tế của thành viên
+        const [ordersResponse, ticketsResponse] = await Promise.all([
+            window.apiClient.get('/api/vtd/member/orders'),
+            window.apiClient.get('/api/vtd/member/my-tickets')
+        ]);
+
         const orders = Array.isArray(ordersResponse) ? ordersResponse : (ordersResponse?.content || []);
+        let tickets = Array.isArray(ticketsResponse) ? ticketsResponse : (ticketsResponse?.content || []);
+
+        // 2. Tra cứu động danh sách các vé Resale đã được bán lại thành công để ẩn đi và hiện thông báo
+        const uniqueEventIds = [...new Set(tickets.map(t => t.ticketType?.event?.eventId).filter(Boolean))];
+        const ticketTypesByEventId = {};
         
+        if (uniqueEventIds.length > 0) {
+            const ticketTypesResults = await Promise.allSettled(
+                uniqueEventIds.map(eventId =>
+                    fetch(`http://localhost:8080/api/lpth/admin/ticket-types/event/${eventId}`)
+                        .then(r => r.ok ? r.json() : [])
+                )
+            );
+            uniqueEventIds.forEach((eventId, idx) => {
+                const res = ticketTypesResults[idx];
+                ticketTypesByEventId[eventId] = res.status === 'fulfilled' ? res.value : [];
+            });
+        }
+
+        // Lọc các vé đã bán lại thành công và gom dữ liệu báo cáo
+        const resoldTicketsDetails = [];
+        tickets = tickets.filter(ticket => {
+            const eventId = ticket.ticketType?.event?.eventId;
+            if (!eventId) return true;
+
+            const eventTypes = ticketTypesByEventId[eventId] || [];
+            const expectedName = `[Resale] ${ticket.ticketType.typeName} (#${ticket.ticketId})`;
+            const resaleType = eventTypes.find(tt => tt.typeName === expectedName);
+
+            if (resaleType && (resaleType.soldQuantity || 0) >= 1) {
+                // Vé đã bán lại thành công! Lưu lại thông tin báo cáo
+                resoldTicketsDetails.push({
+                    eventName: ticket.ticketType.event.title,
+                    typeName: ticket.ticketType.typeName,
+                    price: resaleType.price
+                });
+                return false; // Lọc bỏ (vé biến mất khỏi danh sách của người bán!)
+            }
+            return true; // Giữ lại vé chưa bán
+        });
+
+        // Hiển thị Banner thông báo bán thành công động nếu có vé vừa bán
+        const successAlert = document.getElementById('resale-success-alert');
+        const alertMsg = document.getElementById('resale-alert-msg');
+        if (successAlert && alertMsg) {
+            if (resoldTicketsDetails.length > 0) {
+                const detailsStr = resoldTicketsDetails.map(d => 
+                    `Vé ${d.typeName} của sự kiện "${d.eventName}" đã được bán thành công với giá ${Number(d.price).toLocaleString('vi-VN')} đ.`
+                ).join('<br/>');
+                alertMsg.innerHTML = `Chúc mừng! Bạn có giao dịch bán lại thành công:<br/>${detailsStr}`;
+                successAlert.classList.remove('hidden');
+                successAlert.classList.add('flex');
+            } else {
+                successAlert.classList.add('hidden');
+            }
+        }
+
         let totalEvents = 0;
         let totalTickets = 0;
         let totalRevenue = 0;
-        
+
         // Chỉ thống kê dựa trên các đơn hàng đã thanh toán thành công (COMPLETED hoặc CONFIRMED)
         const validOrders = orders.filter(o => o.status === 'COMPLETED' || o.status === 'CONFIRMED');
-        const eventIds = new Set(); // Dùng Set để tránh trùng lặp sự kiện khi tính tổng số sự kiện tham gia
+        
+        // Map để gom vé theo orderId
+        const ticketsByOrderId = {};
+        const eventIds = new Set(); // Đếm tổng số sự kiện tham gia độc bản
 
-        validOrders.forEach(order => {
-            totalRevenue += Number(order.totalAmount || 0);
-            if (order.items && Array.isArray(order.items)) {
-                order.items.forEach(item => {
-                    totalTickets += item.quantity || 1;
-                    if (item.eventId) eventIds.add(item.eventId);
-                });
-            } else {
-                totalTickets += 1;
-                eventIds.add(`mock-event-${order.orderId}`);
+        tickets.forEach(ticket => {
+            if (ticket.order && ticket.order.orderId) {
+                const orderId = ticket.order.orderId;
+                if (!ticketsByOrderId[orderId]) {
+                    ticketsByOrderId[orderId] = [];
+                }
+                ticketsByOrderId[orderId].push(ticket);
+            }
+
+            if (ticket.ticketType?.event?.eventId) {
+                eventIds.add(ticket.ticketType.event.eventId);
             }
         });
-        
+
+        // Tính toán tổng số lượng
+        validOrders.forEach(order => {
+            totalRevenue += Number(order.totalAmount || order.finalAmount || 0);
+            
+            // Số lượng vé thực tế từ DB hoặc fallback
+            const orderTickets = ticketsByOrderId[order.orderId] || [];
+            totalTickets += orderTickets.length > 0 ? orderTickets.length : 1;
+        });
+
         totalEvents = eventIds.size;
 
-        // Cập nhật số liệu lên các ô chỉ báo (Metric Cards) bằng việc sử dụng ID trực tiếp
-        // Đảm bảo tường minh, tránh lỗi CSS kế thừa so với dùng querySelector chung
+        // Cập nhật số liệu lên các ô chỉ báo (Metric Cards)
         const totalEventsEl = document.getElementById('stat-total-events');
         const totalTicketsEl = document.getElementById('stat-total-tickets');
         const totalRevenueEl = document.getElementById('stat-total-revenue');
@@ -230,30 +295,87 @@ async function loadDashboardMetrics() {
         if (totalTicketsEl) totalTicketsEl.innerText = totalTickets.toString();
         if (totalRevenueEl) totalRevenueEl.innerText = totalRevenue.toLocaleString('vi-VN') + " đ";
 
-        // Cập nhật bảng kê lịch sử đơn hàng ở Sub-tab "Sự kiện sắp diễn ra"
-        const activeTableBody = document.querySelector('#sub-tab-active-content tbody');
-        if (activeTableBody) {
-            if (validOrders.length === 0) {
-                activeTableBody.innerHTML = `<tr><td colspan="6" class="p-5 text-center text-slate-400 font-bold">Bạn chưa sở hữu chiếc vé sự kiện nào thanh toán thành công.</td></tr>`;
+        // Phân loại các đơn hàng thành "Sắp diễn ra" và "Đã qua" dựa trên thời gian kết thúc sự kiện
+        const activeOrders = [];
+        const pastOrders = [];
+        const now = new Date();
+
+        validOrders.forEach(order => {
+            const orderTickets = ticketsByOrderId[order.orderId] || [];
+            let isPast = false;
+
+            if (orderTickets.length > 0) {
+                // Lấy ngày kết thúc của vé đầu tiên trong đơn hàng làm mốc so sánh
+                const event = orderTickets[0].ticketType?.event;
+                if (event && event.endTime) {
+                    isPast = new Date(event.endTime) < now;
+                }
+            }
+
+            if (isPast) {
+                pastOrders.push(order);
             } else {
-                activeTableBody.innerHTML = validOrders.map(order => {
-                    const dateStr = new Date(order.orderDate || order.createdAt).toLocaleDateString('vi-VN');
-                    return `
-                        <tr class="border-b border-gray-150 hover:bg-slate-50 transition text-slate-700">
-                            <td class="p-4">
-                                <div class="flex flex-col gap-0.5">
-                                    <span class="font-extrabold text-slate-900">Đơn hàng soát vé điện tử</span>
-                                    <span class="text-[10px] text-slate-400">📅 Ngày lập: ${dateStr}</span>
-                                </div>
-                            </td>
-                            <td class="p-4 text-slate-900 font-mono">BDHT${order.orderId}</td>
-                            <td class="p-4 text-center"><span class="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded text-[10px] font-black uppercase">Đã thanh toán</span></td>
-                            <td class="p-4 text-center">${order.items ? order.items.length : 1}</td>
-                            <td class="p-4 text-right">${Number(order.totalAmount || 0).toLocaleString('vi-VN')} đ</td>
-                            <td class="p-4 text-right text-slate-900 font-bold">${Number(order.totalAmount || 0).toLocaleString('vi-VN')} đ</td>
-                        </tr>
-                    `;
-                }).join('');
+                activeOrders.push(order);
+            }
+        });
+
+        // Hàm render dòng cho bảng vé
+        const renderOrderRow = (order) => {
+            const dateStr = new Date(order.createdAt || order.orderDate).toLocaleDateString('vi-VN');
+            const orderTickets = ticketsByOrderId[order.orderId] || [];
+            
+            // Lấy tên sự kiện từ vé
+            let eventName = "Đơn hàng soát vé điện tử";
+            if (orderTickets.length > 0 && orderTickets[0].ticketType?.event?.title) {
+                eventName = orderTickets[0].ticketType.event.title;
+            }
+
+            const ticketCount = orderTickets.length > 0 ? orderTickets.length : 1;
+
+            return `
+                <tr class="border-b border-gray-150 hover:bg-slate-50 transition text-slate-700">
+                    <td class="p-4">
+                        <div class="flex flex-col gap-0.5 max-w-xs sm:max-w-md">
+                            <span class="font-extrabold text-slate-900 truncate" title="${eventName}">${eventName}</span>
+                            <span class="text-[10px] text-slate-400 font-semibold">📅 Ngày lập đơn: ${dateStr}</span>
+                        </div>
+                    </td>
+                    <td class="p-4 text-slate-900 font-mono">BDHT${order.orderId}</td>
+                    <td class="p-4 text-center">
+                        <span class="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded text-[10px] font-black uppercase">
+                            Đã thanh toán
+                        </span>
+                    </td>
+                    <td class="p-4 text-center text-slate-900 font-bold">${ticketCount}</td>
+                    <td class="p-4 text-right text-slate-950 font-extrabold">${Number(order.totalAmount || order.finalAmount || 0).toLocaleString('vi-VN')} đ</td>
+                    <td class="p-4 text-center">
+                        <button type="button" 
+                            class="btn-view-qr bg-theme-brandOrange hover:bg-orange-600 text-white px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition hover:scale-105 active:scale-95 flex items-center gap-1.5 mx-auto"
+                            data-order-id="${order.orderId}">
+                            <i class="fas fa-qrcode text-xs"></i> Xem QR
+                        </button>
+                    </td>
+                </tr>
+            `;
+        };
+
+        // Render bảng Sự kiện sắp diễn ra
+        const activeTableBody = document.getElementById('tickets-active-tbody');
+        if (activeTableBody) {
+            if (activeOrders.length === 0) {
+                activeTableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 font-bold">Bạn chưa sở hữu chiếc vé sự kiện sắp tới nào.</td></tr>`;
+            } else {
+                activeTableBody.innerHTML = activeOrders.map(renderOrderRow).join('');
+            }
+        }
+
+        // Render bảng Sự kiện đã qua
+        const pastTableBody = document.getElementById('tickets-past-tbody');
+        if (pastTableBody) {
+            if (pastOrders.length === 0) {
+                pastTableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 font-bold">Chưa có vé lịch sử nào đã diễn ra.</td></tr>`;
+            } else {
+                pastTableBody.innerHTML = pastOrders.map(renderOrderRow).join('');
             }
         }
 
@@ -264,16 +386,18 @@ async function loadDashboardMetrics() {
                 reportsTableBody.innerHTML = `<tr><td colspan="7" class="p-5 text-center text-slate-400 font-bold">Chưa có dữ liệu giao dịch hóa đơn báo cáo.</td></tr>`;
             } else {
                 reportsTableBody.innerHTML = validOrders.map(order => {
+                    const orderTickets = ticketsByOrderId[order.orderId] || [];
+                    const ticketCount = orderTickets.length > 0 ? orderTickets.length : 1;
                     return `
                         <tr class="border-b border-gray-150 hover:bg-slate-50 transition text-slate-700">
                             <td class="p-4 font-extrabold text-slate-900 max-w-xs truncate">
                                 Hóa đơn mua vé điện tử #BDHT${order.orderId}
                             </td>
                             <td class="p-4 text-center">-</td>
-                            <td class="p-4 text-center text-emerald-600">${order.items ? order.items.length : 1}</td>
+                            <td class="p-4 text-center text-emerald-600">${ticketCount}</td>
                             <td class="p-4 text-center text-amber-500">0</td>
                             <td class="p-4 text-center">0</td>
-                            <td class="p-4 text-right text-slate-900 font-extrabold">${Number(order.totalAmount || 0).toLocaleString('vi-VN')} đ</td>
+                            <td class="p-4 text-right text-slate-900 font-extrabold">${Number(order.totalAmount || order.finalAmount || 0).toLocaleString('vi-VN')} đ</td>
                             <td class="p-4 text-center">
                                 <button type="button" class="text-theme-brandBlue hover:text-indigo-650 transition" title="Xem chi tiết báo cáo">
                                     <i class="far fa-eye text-base"></i>

@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     // Tải Header dynamic nếu có tiện ích
     if (window.pageUtils && typeof window.pageUtils.loadHeader === 'function') {
         window.pageUtils.loadHeader();
@@ -583,11 +583,11 @@ function setupBookingForm() {
         }
 
         const ticketTypeId = Number(selectedTicketType.value);
-        // Lấy thông tin hạng vé để hiển thị ở trang payment
         const selectedLabel = selectedTicketType.closest('label');
-        const typeName = selectedLabel ? selectedLabel.querySelector('span span').innerText : 'Vé sự kiện';
-        const priceText = selectedLabel ? selectedLabel.querySelectorAll('span')[2].innerText.split('(')[0].trim() : '0';
-        const unitPrice = Number(priceText.replace(/[^0-9]/g, ''));
+        const typeName = selectedLabel ? (selectedLabel.querySelector('.font-black.tracking-wide')?.innerText || 'Vé sự kiện') : 'Vé sự kiện';
+        const priceSpan = selectedLabel ? selectedLabel.querySelector('.text-brand-orange.text-base.font-black') : null;
+        const priceText = priceSpan ? priceSpan.innerText : '0';
+        const unitPrice = Number(priceText.replace(/[^0-9]/g, '')) || 0;
 
         // 1. Đóng gói dữ liệu giỏ hàng tạm thời
         const pendingCheckout = {
