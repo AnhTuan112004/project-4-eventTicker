@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ----------------------------------------------------------------------------
  *  HỆ THỐNG ĐẶT VÉ SỰ KIỆN BDHT
  * Tệp tin: auth.js
@@ -54,7 +54,7 @@ function redirectAfterLogin(user) {
     const userRole = user.role || 'USER';
     if (userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') {
         // Chuyển sang trang quản lý tổng quan của ban quản trị
-        window.location.href = window.pageUtils ? window.pageUtils.resolveUrl('pages/admin/lpth_nat-dashboard.html') : '../admin/lpth_nat-dashboard.html';
+        window.location.href = window.pageUtils ? window.pageUtils.resolveUrl('pages/admin/lpth_dashboard.html') : '../admin/lpth_dashboard.html';
     } else {
         // Người dùng thông thường được đưa về trang chủ
         window.location.href = window.pageUtils ? window.pageUtils.resolveUrl('pages/index.html') : '../../index.html';
