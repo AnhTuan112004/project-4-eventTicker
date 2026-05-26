@@ -154,6 +154,35 @@ function setupSellTab() {
     if (sellForm) {
         sellForm.addEventListener('submit', handleSellFormSubmit);
     }
+
+    // Toggle tạo danh mục mới
+    const categorySelect = document.getElementById('sell-category');
+    const categoryNewWrapper = document.getElementById('sell-category-new-wrapper');
+    const categoryNewInput = document.getElementById('sell-category-new-input');
+    const categoryNewHint = document.getElementById('sell-category-new-hint');
+    const categoryNewCancel = document.getElementById('sell-category-new-cancel');
+
+    if (categorySelect) {
+        categorySelect.addEventListener('change', () => {
+            if (categorySelect.value === '__new__') {
+                categoryNewWrapper?.classList.remove('hidden');
+                categoryNewHint?.classList.remove('hidden');
+                categoryNewInput?.focus();
+            } else {
+                categoryNewWrapper?.classList.add('hidden');
+                categoryNewHint?.classList.add('hidden');
+            }
+        });
+    }
+
+    if (categoryNewCancel) {
+        categoryNewCancel.addEventListener('click', () => {
+            if (categorySelect) categorySelect.value = '';
+            categoryNewWrapper?.classList.add('hidden');
+            categoryNewHint?.classList.add('hidden');
+            if (categoryNewInput) categoryNewInput.value = '';
+        });
+    }
 }
 
 // ============================================================================
@@ -306,7 +335,11 @@ async function handleSellFormSubmit(e) {
 
         // ─── BƯỚC 2: VALIDATE & TẠO SỰ KIỆN ────────────────────────────────
         const title       = document.getElementById('sell-title')?.value.trim();
-        const category    = document.getElementById('sell-category')?.value;
+        const categorySelect = document.getElementById('sell-category');
+        const categoryNewInput = document.getElementById('sell-category-new-input');
+        const category    = (categorySelect?.value === '__new__')
+            ? (categoryNewInput?.value.trim() || '')
+            : (categorySelect?.value || '');
         const artist      = document.getElementById('sell-artist')?.value.trim() || '';
         const banner      = document.getElementById('sell-banner')?.value.trim() || '';
         const startTime   = document.getElementById('sell-start-time')?.value;
@@ -609,14 +642,10 @@ async function removeMyEvent(eventId) {
     }
 
     try {
-        // Cập nhật backend: đặt status = CANCELLED
+        // Gỡ sự kiện: dùng DELETE (xóa mềm - backend set deletedAt)
         const res = await fetch(
-            `http://localhost:8080/api/lpth/admin/events/update/${eventId}`,
-            {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'CANCELLED' })
-            }
+            `http://localhost:8080/api/lpth/admin/events/delete/${eventId}`,
+            { method: 'DELETE' }
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 

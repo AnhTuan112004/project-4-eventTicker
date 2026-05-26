@@ -406,9 +406,46 @@
 
                 <!-- TAB 4: THỐNG KÊ HÓA ĐƠN (id="tab-reports" class="hidden") -->
                 <section id="tab-reports" class="dashboard-tab flex flex-col gap-6 hidden">
-                    <div class="border-b border-gray-250 pb-3">
-                        <h2 class="text-lg font-black text-slate-900 uppercase">Thống kê hóa đơn</h2>
-                        <p class="text-[10px] text-slate-400 font-bold mt-0.5">Báo cáo doanh thu, lượt view và tỷ lệ vé thanh toán của sự kiện</p>
+                    <div class="border-b border-gray-250 pb-3 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-lg font-black text-slate-900 uppercase">Thống kê hóa đơn</h2>
+                            <p class="text-[10px] text-slate-400 font-bold mt-0.5">Báo cáo doanh thu và lịch sử giao dịch vé điện tử của bạn</p>
+                        </div>
+                        <button type="button" id="report-export-btn"
+                            class="inline-flex items-center gap-2 bg-theme-brandBlue hover:bg-slate-700 text-white font-extrabold text-xs px-4 py-2 rounded-xl uppercase tracking-wider shadow transition">
+                            <i class="fas fa-file-export"></i> Xuất CSV
+                        </button>
+                    </div>
+
+                    <!-- Summary stat cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-150 p-5 flex items-center gap-4 hover:shadow-md transition">
+                            <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center text-lg flex-shrink-0">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <div>
+                                <div id="report-stat-orders" class="text-2xl font-black text-slate-900">—</div>
+                                <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wide">Tổng đơn hàng</span>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-150 p-5 flex items-center gap-4 hover:shadow-md transition">
+                            <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg flex-shrink-0">
+                                <i class="fas fa-ticket-alt"></i>
+                            </div>
+                            <div>
+                                <div id="report-stat-tickets" class="text-2xl font-black text-slate-900">—</div>
+                                <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wide">Vé đã mua</span>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-150 p-5 flex items-center gap-4 hover:shadow-md transition">
+                            <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-lg flex-shrink-0">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div>
+                                <div id="report-stat-revenue" class="text-xl font-black text-slate-900">—</div>
+                                <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wide">Tổng chi tiêu</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-150 overflow-hidden">
@@ -416,40 +453,19 @@
                             <table class="w-full text-left text-xs font-bold border-collapse">
                                 <thead>
                                     <tr class="bg-theme-brandBlue text-white uppercase tracking-wider border-b border-gray-100">
-                                        <th class="p-4">Tên sự kiện</th>
-                                        <th class="p-4 text-center">Lượt View</th>
-                                        <th class="p-4 text-center">Số vé đã bán</th>
+                                        <th class="p-4">Tên sự kiện / Hóa đơn</th>
+                                        <th class="p-4 text-center">Số vé đã mua</th>
                                         <th class="p-4 text-center">Chờ thanh toán</th>
-                                        <th class="p-4 text-center">Trang thứ 3</th>
-                                        <th class="p-4 text-right">Doanh thu</th>
-                                        <th class="p-4 text-center">Thao tác</th>
+                                        <th class="p-4 text-center">Hoàn tiền</th>
+                                        <th class="p-4 text-right">Chi tiêu</th>
+                                        <th class="p-4 text-center">Chi tiết</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr class="border-b border-gray-150 hover:bg-slate-50 transition text-slate-700">
-                                        <td class="p-4 font-extrabold text-slate-900 max-w-xs truncate">
-                                            Liveshow HÀ NHI - Người yêu cũ là Tri kỷ
+                                <tbody id="reports-tbody">
+                                    <tr>
+                                        <td colspan="6" class="p-8 text-center text-slate-400">
+                                            <i class="fas fa-spinner fa-spin mr-2"></i>Đang tải dữ liệu...
                                         </td>
-                                        <td class="p-4 text-center">1,245</td>
-                                        <td class="p-4 text-center text-emerald-600">1</td>
-                                        <td class="p-4 text-center text-amber-500">0</td>
-                                        <td class="p-4 text-center">0</td>
-                                        <td class="p-4 text-right text-slate-900 font-extrabold">3,100,000 VND</td>
-                                        <td class="p-4 text-center">
-                                            <button type="button" class="text-theme-brandBlue hover:text-indigo-650 transition" title="Xem chi tiết báo cáo">
-                                                <i class="far fa-eye text-base"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <!-- Total row -->
-                                    <tr class="bg-slate-50 border-t border-gray-200 font-extrabold text-xs">
-                                        <td class="p-4 text-theme-brandOrange uppercase text-sm">Tổng doanh thu</td>
-                                        <td class="p-4 text-center text-slate-400">-</td>
-                                        <td class="p-4 text-center text-slate-400">-</td>
-                                        <td class="p-4 text-center text-slate-400">-</td>
-                                        <td class="p-4 text-center text-slate-400">-</td>
-                                        <td class="p-4 text-right text-theme-brandOrange text-sm">3,100,000 VND</td>
-                                        <td class="p-4 text-center text-slate-400">-</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -524,7 +540,19 @@
                                                 <option value="Nghệ thuật">Nghệ thuật / Văn hóa</option>
                                                 <option value="Giải trí">Giải trí</option>
                                                 <option value="Sự kiện khác">Sự kiện khác</option>
+                                                <option value="__new__" class="text-theme-brandOrange font-bold">✏️ Tạo danh mục mới...</option>
                                             </select>
+                                            <!-- Input tạo danh mục mới (ẩn mặc định) -->
+                                            <div id="sell-category-new-wrapper" class="hidden flex gap-2 items-center">
+                                                <input type="text" id="sell-category-new-input"
+                                                    placeholder="VD: Lễ hội, Triển lãm, Khóa học..."
+                                                    class="flex-1 px-3.5 py-2.5 border-2 border-theme-brandOrange rounded-xl font-semibold focus:outline-none bg-orange-50 text-xs transition" />
+                                                <button type="button" id="sell-category-new-cancel"
+                                                    class="px-3 py-2.5 text-slate-400 hover:text-red-400 transition text-xs font-bold" title="Hủy">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                            <p id="sell-category-new-hint" class="hidden text-[10px] text-theme-brandOrange font-semibold">💡 Nhập tên danh mục mới rồi tiếp tục điền form.</p>
                                         </div>
                                         <div class="flex flex-col gap-2">
                                             <label class="text-slate-500">Nghệ sĩ / Diễn giả</label>
@@ -775,6 +803,33 @@
                     <i class="fas fa-shield-alt text-emerald-500 mr-1"></i>
                     Vé điện tử có mã bảo mật riêng — Chỉ sử dụng được 1 lần
                 </p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal chi tiết hóa đơn báo cáo -->
+    <div id="report-detail-modal" class="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+            <!-- Modal header -->
+            <div class="bg-theme-brandBlue text-white px-6 py-4 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+                        <i class="fas fa-file-invoice-dollar text-base"></i>
+                    </div>
+                    <div>
+                        <h3 id="modal-event-title" class="text-sm font-black uppercase tracking-wide truncate max-w-xs">Chi tiết hóa đơn</h3>
+                        <p id="modal-event-date" class="text-[10px] text-white/70 font-semibold mt-0.5"></p>
+                    </div>
+                </div>
+                <button type="button" id="report-modal-close"
+                    class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition text-lg leading-none">
+                    &times;
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div id="modal-body" class="flex-1 overflow-y-auto p-6 flex flex-col gap-4 text-xs font-bold">
+                <!-- Filled by JS -->
             </div>
         </div>
     </div>
