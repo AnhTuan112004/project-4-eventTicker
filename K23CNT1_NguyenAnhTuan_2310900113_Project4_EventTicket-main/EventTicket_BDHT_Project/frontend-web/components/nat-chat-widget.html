@@ -1,0 +1,165 @@
+<div id="chat-widget-fab" type="button"
+    class="fixed bottom-5 right-4 sm:bottom-6 sm:right-8 w-14 h-14 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 text-white flex items-center justify-center shadow-[0_18px_45px_rgba(242,111,33,0.35)] z-[1000] border-none cursor-pointer outline-none transition-all duration-300 hover:scale-105 active:scale-95">
+    <i id="fab-chat-icon" class="fas fa-comment-dots text-xl"></i>
+    <i id="fab-close-icon" class="fas fa-times text-xl hidden"></i>
+    <!-- Notification badge -->
+    <span id="fab-notification-badge"
+        class="hidden absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center animate-bounce">1</span>
+</div>
+
+<div id="chat-popup-container"
+    class="hidden fixed bottom-24 right-4 sm:right-8 w-[min(92vw,400px)] max-h-[82vh] bg-white rounded-[28px] shadow-[0_24px_80px_rgba(15,23,42,0.22)] border border-gray-100 flex flex-col overflow-hidden z-[1000]"
+    style="animation: chatSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+
+    <!-- Header -->
+    <div class="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-orange-500 to-rose-500 text-white">
+        <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center shrink-0">
+                    <i class="fas fa-robot text-lg"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-sm font-extrabold truncate">BDHT Assistant</p>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-green-300 animate-pulse"></span>
+                        <p id="chat-status-text" class="text-[11px] text-white/80">Sẵn sàng hỗ trợ bạn</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-1">
+                <button id="chat-clear-btn" type="button" title="Xóa cuộc trò chuyện"
+                    class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 text-white/80 hover:text-white flex items-center justify-center transition-colors border-none outline-none cursor-pointer">
+                    <i class="fas fa-trash-alt text-xs"></i>
+                </button>
+                <button id="chat-close-btn" type="button"
+                    class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 text-white/80 hover:text-white flex items-center justify-center transition-colors border-none outline-none cursor-pointer">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div id="chat-messages-box" class="flex-1 overflow-y-auto px-4 py-4 bg-slate-50 space-y-4"
+        style="scroll-behavior: smooth;">
+        <!-- Welcome message injected by JS -->
+    </div>
+
+    <!-- Quick Reply Chips Container -->
+    <div id="chat-quick-replies" class="px-3 py-2 bg-white border-t border-gray-50 overflow-x-auto"
+        style="display: none;">
+        <div id="chat-quick-replies-inner" class="flex gap-2 pb-1" style="white-space: nowrap;">
+            <!-- chips injected by JS -->
+        </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="border-t border-gray-100 bg-white px-3 py-3">
+        <div class="flex items-end gap-2">
+            <textarea id="chat-input-field" rows="1" placeholder="Nhập câu hỏi của bạn..."
+                class="flex-1 resize-none border border-gray-200 rounded-2xl px-4 py-3 text-sm text-gray-800 bg-gray-50 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none min-h-[46px] max-h-[120px]"></textarea>
+            <button id="chat-send-btn" type="button"
+                class="w-11 h-11 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white flex items-center justify-center border-none cursor-pointer shadow-md transition-all shrink-0 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="fas fa-paper-plane text-sm"></i>
+            </button>
+        </div>
+        <p class="mt-2 text-[10px] font-semibold text-gray-400 uppercase tracking-[0.15em] text-center">
+            <i class="fas fa-bolt text-orange-400 mr-1"></i>Trợ lý AI hỗ trợ 24/7
+        </p>
+    </div>
+</div>
+
+<style>
+    @keyframes chatSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes dotBounce {
+
+        0%,
+        80%,
+        100% {
+            transform: translateY(0);
+        }
+
+        40% {
+            transform: translateY(-6px);
+        }
+    }
+
+    .typing-dot {
+        width: 7px;
+        height: 7px;
+        background: #94a3b8;
+        border-radius: 50%;
+        display: inline-block;
+        animation: dotBounce 1.2s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(2) {
+        animation-delay: 0.15s;
+    }
+
+    .typing-dot:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    #chat-messages-box::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    #chat-messages-box::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    #chat-messages-box::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+
+    #chat-quick-replies::-webkit-scrollbar {
+        height: 3px;
+    }
+
+    #chat-quick-replies::-webkit-scrollbar-thumb {
+        background: #e2e8f0;
+        border-radius: 3px;
+    }
+
+    .chat-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        border: 1.5px solid #e2e8f0;
+        background: white;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .chat-chip:hover {
+        border-color: #f97316;
+        color: #f97316;
+        background: #fff7ed;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(249, 115, 22, 0.15);
+    }
+
+    .chat-chip:active {
+        transform: translateY(0);
+    }
+</style>
