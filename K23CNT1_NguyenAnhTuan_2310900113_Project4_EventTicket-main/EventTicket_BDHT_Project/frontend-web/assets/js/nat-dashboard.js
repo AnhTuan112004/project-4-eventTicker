@@ -9,26 +9,26 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- CHỐT CHẶN BẢO VỆ ROUTE GUARD ---
     // Kiểm tra token đăng nhập trước khi cho phép thực thi giao diện điều khiển
-    const token = localStorage.getItem('token'); 
+    const token = localStorage.getItem('token');
     if (!token) {
         alert("⚠️ Bạn chưa đăng nhập hệ thống hoặc phiên làm việc đã hết hạn. Vui lòng đăng nhập lại!");
         // Chuyển hướng về trang đăng nhập nat-login.html
-        window.location.href = window.pageUtils ? window.pageUtils.resolveUrl('pages/user/nat-login.html') : './nat-login.html'; 
+        window.location.href = window.pageUtils ? window.pageUtils.resolveUrl('pages/user/nat-login.html') : './nat-login.html';
         return; // Dừng việc thực thi các tiến trình bên dưới để bảo mật
     }
 
     // 1. Khởi tạo chức năng chuyển các Tab chính ở thanh Sidebar bên trái
     setupMainTabNavigation();
-    
+
     // 2. Khởi tạo tính năng đổi Sub-Tab giữa 'Vé sắp diễn ra' và 'Vé đã qua'
     setupSubTabNavigation();
-    
+
     // 3. Khởi tạo giao diện xem danh sách và Form tạo mới Nhà Tổ Chức ở Tab Tùy Chỉnh
     setupCustomizationViews();
-    
+
     // 4. Đồng bộ hóa số liệu thống kê thực tế từ Backend API (Doanh thu, Sự kiện, Vé)
     loadDashboardMetrics();
-    
+
     // 5. Khởi tạo Widget Profile Menu thả xuống (Dropdown) ở góc trên bên phải
     setupUserDropdown();
 
@@ -118,7 +118,7 @@ function setupSubTabNavigation() {
     activeBtn.addEventListener('click', () => {
         activeBtn.className = "px-5 py-3 text-xs font-bold bg-theme-brandBlue text-white rounded-t-xl transition-all duration-200 border border-b-0 border-theme-brandBlue";
         pastBtn.className = "px-5 py-3 text-xs font-bold bg-white text-slate-700 rounded-t-xl hover:bg-slate-50 transition-all duration-200 border-t border-r border-gray-200";
-        
+
         activeContent.classList.remove('hidden');
         pastContent.classList.add('hidden');
     });
@@ -127,7 +127,7 @@ function setupSubTabNavigation() {
     pastBtn.addEventListener('click', () => {
         pastBtn.className = "px-5 py-3 text-xs font-bold bg-theme-brandBlue text-white rounded-t-xl transition-all duration-200 border border-b-0 border-theme-brandBlue";
         activeBtn.className = "px-5 py-3 text-xs font-bold bg-white text-slate-700 rounded-t-xl hover:bg-slate-50 transition-all duration-200 border-t border-r border-gray-200";
-        
+
         pastContent.classList.remove('hidden');
         activeContent.classList.add('hidden');
     });
@@ -199,13 +199,13 @@ async function loadDashboardMetrics() {
 
         const orders = Array.isArray(ordersResponse) ? ordersResponse : (ordersResponse?.content || []);
         let tickets = Array.isArray(ticketsResponse) ? ticketsResponse : (ticketsResponse?.content || []);
-        const pendingOrders  = Array.isArray(pendingResponse)   ? pendingResponse   : (pendingResponse?.content   || []);
+        const pendingOrders = Array.isArray(pendingResponse) ? pendingResponse : (pendingResponse?.content || []);
         const cancelledOrders = Array.isArray(cancelledResponse) ? cancelledResponse : (cancelledResponse?.content || []);
 
         // 2. Tra cứu động danh sách các vé Resale đã được bán lại thành công để ẩn đi và hiện thông báo
         const uniqueEventIds = [...new Set(tickets.map(t => t.ticketType?.event?.eventId).filter(Boolean))];
         const ticketTypesByEventId = {};
-        
+
         if (uniqueEventIds.length > 0) {
             const ticketTypesResults = await Promise.allSettled(
                 uniqueEventIds.map(eventId =>
@@ -246,7 +246,7 @@ async function loadDashboardMetrics() {
         const alertMsg = document.getElementById('resale-alert-msg');
         if (successAlert && alertMsg) {
             if (resoldTicketsDetails.length > 0) {
-                const detailsStr = resoldTicketsDetails.map(d => 
+                const detailsStr = resoldTicketsDetails.map(d =>
                     `Vé ${d.typeName} của sự kiện "${d.eventName}" đã được bán thành công với giá ${Number(d.price).toLocaleString('vi-VN')} đ.`
                 ).join('<br/>');
                 alertMsg.innerHTML = `Chúc mừng! Bạn có giao dịch bán lại thành công:<br/>${detailsStr}`;
@@ -263,7 +263,7 @@ async function loadDashboardMetrics() {
 
         // Chỉ thống kê dựa trên các đơn hàng đã thanh toán thành công (COMPLETED hoặc CONFIRMED)
         const validOrders = orders.filter(o => o.status === 'COMPLETED' || o.status === 'CONFIRMED');
-        
+
         // Map để gom vé theo orderId
         const ticketsByOrderId = {};
         const eventIds = new Set(); // Đếm tổng số sự kiện tham gia độc bản
@@ -285,7 +285,7 @@ async function loadDashboardMetrics() {
         // Tính toán tổng số lượng
         validOrders.forEach(order => {
             totalRevenue += Number(order.totalAmount || order.finalAmount || 0);
-            
+
             // Số lượng vé thực tế từ DB hoặc fallback
             const orderTickets = ticketsByOrderId[order.orderId] || [];
             totalTickets += orderTickets.length > 0 ? orderTickets.length : 1;
@@ -330,7 +330,7 @@ async function loadDashboardMetrics() {
         const renderOrderRow = (order) => {
             const dateStr = new Date(order.createdAt || order.orderDate).toLocaleDateString('vi-VN');
             const orderTickets = ticketsByOrderId[order.orderId] || [];
-            
+
             // Lấy tên sự kiện từ vé
             let eventName = "Đơn hàng soát vé điện tử";
             if (orderTickets.length > 0 && orderTickets[0].ticketType?.event?.title) {
@@ -460,8 +460,8 @@ async function loadDashboardMetrics() {
                             <div class="flex flex-col gap-0.5">
                                 <span class="font-extrabold text-slate-900 max-w-xs truncate block" title="${evt.eventName}">${evt.eventName}</span>
                                 ${evt.eventStartTime
-                                    ? `<span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1"><i class="fas fa-calendar-alt text-orange-300 w-3"></i>${new Date(evt.eventStartTime).toLocaleDateString('vi-VN', {day:'2-digit', month:'2-digit', year:'numeric'})}</span>`
-                                    : ''}
+                        ? `<span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1"><i class="fas fa-calendar-alt text-orange-300 w-3"></i>${new Date(evt.eventStartTime).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>`
+                        : ''}
                                 <span class="text-[10px] text-slate-400 font-semibold"><i class="fas fa-receipt w-3 text-slate-300"></i> ${evt.orders.length} đơn hàng</span>
                             </div>
                         </td>
@@ -470,15 +470,15 @@ async function loadDashboardMetrics() {
                         </td>
                         <td class="p-4 text-center">
                             ${evt.pendingCount > 0
-                                ? `<span class="bg-amber-100 text-amber-700 font-black px-2.5 py-1 rounded-full">${evt.pendingCount}</span>`
-                                : `<span class="text-slate-400 font-bold">0</span>`
-                            }
+                        ? `<span class="bg-amber-100 text-amber-700 font-black px-2.5 py-1 rounded-full">${evt.pendingCount}</span>`
+                        : `<span class="text-slate-400 font-bold">0</span>`
+                    }
                         </td>
                         <td class="p-4 text-center">
                             ${evt.cancelledCount > 0
-                                ? `<span class="bg-red-100 text-red-600 font-black px-2.5 py-1 rounded-full">${evt.cancelledCount}</span>`
-                                : `<span class="text-slate-400 font-bold">0</span>`
-                            }
+                        ? `<span class="bg-red-100 text-red-600 font-black px-2.5 py-1 rounded-full">${evt.cancelledCount}</span>`
+                        : `<span class="text-slate-400 font-bold">0</span>`
+                    }
                         </td>
                         <td class="p-4 text-right text-slate-900 font-extrabold">${evt.totalRevenue.toLocaleString('vi-VN')} đ</td>
                         <td class="p-4 text-center">
@@ -598,12 +598,12 @@ function showReportDetailModal(eventKey) {
             <h4 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Chi tiết từng đơn hàng</h4>
             <div class="flex flex-col gap-3">
                 ${evt.orders.map(({ order, tickets }) => {
-                    const dateStr = new Date(order.createdAt || order.orderDate || Date.now()).toLocaleDateString('vi-VN', {
-                        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                    });
-                    const amount = Number(order.totalAmount || order.finalAmount || 0);
-                    const ticketCount = tickets.length > 0 ? tickets.length : 1;
-                    return `
+        const dateStr = new Date(order.createdAt || order.orderDate || Date.now()).toLocaleDateString('vi-VN', {
+            day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+        const amount = Number(order.totalAmount || order.finalAmount || 0);
+        const ticketCount = tickets.length > 0 ? tickets.length : 1;
+        return `
                         <div class="bg-slate-50 rounded-xl p-4 border border-gray-150">
                             <div class="flex items-start justify-between mb-3">
                                 <div>
@@ -628,7 +628,7 @@ function showReportDetailModal(eventKey) {
                             ` : `<p class="text-[10px] text-slate-400 italic">${ticketCount} vé đã mua.</p>`}
                         </div>
                     `;
-                }).join('')}
+    }).join('')}
             </div>
         </div>
     `;
@@ -652,9 +652,9 @@ function setupUserDropdown() {
     const storedUser = localStorage.getItem('currentUser');
     let userObj = null;
     if (storedUser) {
-        try { userObj = JSON.parse(storedUser); } catch(e) {}
+        try { userObj = JSON.parse(storedUser); } catch (e) { }
     }
-    
+
     // Nếu rỗng, thử khôi phục từ checkoutData trước đó
     if (!userObj) {
         const checkoutDataStr = localStorage.getItem('checkoutData');
@@ -664,7 +664,7 @@ function setupUserDropdown() {
                 if (checkoutData.customer) {
                     userObj = { fullName: checkoutData.customer.name };
                 }
-            } catch(e) {}
+            } catch (e) { }
         }
     }
 
@@ -698,13 +698,13 @@ function setupUserDropdown() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            
+
             // Xóa sạch các credentials khỏi localStorage
             localStorage.removeItem('token');
             localStorage.removeItem('currentUser');
-            
+
             // Đưa người dùng trở về màn hình trang chủ
-            window.location.href = window.pageUtils ? window.pageUtils.resolveUrl('index.html') : '../index.html';
+            window.location.href = window.pageUtils ? window.pageUtils.resolveUrl('nat-index.html') : '../nat-index.html';
         });
     }
 }

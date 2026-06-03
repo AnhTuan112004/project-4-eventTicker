@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async () => {
+﻿document.addEventListener('DOMContentLoaded', async () => {
     if (window.pageUtils && window.pageUtils.loadHeader) {
         await window.pageUtils.loadHeader();
     }
@@ -186,13 +186,13 @@ function appendMessage(sender, text, skipSave = false) {
 
         const bubble = document.createElement('div');
         bubble.className = 'bg-white border border-gray-100 px-4 py-3 rounded-[22px] rounded-tl-sm shadow-sm max-w-[85%] leading-relaxed text-sm text-gray-700';
-        
+
         // Render simple markdown like **bold**, \n to breaks
         let formattedText = text
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
             .replace(/\n/g, '<br />');
-        
+
         bubble.innerHTML = formattedText;
 
         msgDiv.appendChild(avatar);
@@ -273,7 +273,7 @@ async function fetchLiveEvents() {
 // Render dynamic suggestion chips after messages
 function setQuickReplyChips(chips) {
     if (!currentQuickRepliesContainer || !currentQuickRepliesInner) return;
-    
+
     if (!chips || chips.length === 0) {
         currentQuickRepliesContainer.style.display = 'none';
         return;
@@ -318,9 +318,9 @@ async function processSmartIntent(message) {
     }
 
     // 3. SPECIAL DYNAMIC EVENTS RETRIEVAL
-    if (/(sự kiện|liveshow|concert|show diễn|vé ca nhạc|xem sự kiện|vé xem phim|workshop|thể thao|hoạt động|chương trình)/i.test(msg) || 
+    if (/(sự kiện|liveshow|concert|show diễn|vé ca nhạc|xem sự kiện|vé xem phim|workshop|thể thao|hoạt động|chương trình)/i.test(msg) ||
         /(nổi bật|hot nhất|có gì hot|ở hà nội|ở hcm|ở sài gòn|gần đây|tìm vé|mua vé)/i.test(msg)) {
-        
+
         showLoadingIndicator();
         const events = await fetchLiveEvents();
         removeLoadingIndicator();
@@ -455,11 +455,11 @@ async function sendChatMessage() {
 
             removeLoadingIndicator();
 
-            const aiText = response?.aiResponse?.messageText || 
-                           response?.aiResponse?.message || 
-                           response?.aiResponse?.content || 
-                           response?.aiResponse?.response || 
-                           "Tôi xin lỗi, hiện tại tôi đang gặp khó khăn khi kết nối với máy chủ. Bạn có cần tôi hỗ trợ các chức năng mua vé hay giải đáp FAQ không?";
+            const aiText = response?.aiResponse?.messageText ||
+                response?.aiResponse?.message ||
+                response?.aiResponse?.content ||
+                response?.aiResponse?.response ||
+                "Tôi xin lỗi, hiện tại tôi đang gặp khó khăn khi kết nối với máy chủ. Bạn có cần tôi hỗ trợ các chức năng mua vé hay giải đáp FAQ không?";
 
             appendMessage('ai', aiText);
             setQuickReplyChips(['🎫 Xem sự kiện', '💳 Quy trình thanh toán', '🔄 Đổi/Hủy vé', '📞 Liên hệ hỗ trợ']);
@@ -513,7 +513,7 @@ async function initAiChat() {
     const chatInput = document.getElementById('chat-input-field');
     const chatSendBtn = document.getElementById('chat-send-btn');
     const chatBox = document.getElementById('chat-messages-box');
-    
+
     currentChatBox = chatBox;
     currentChatInput = chatInput;
     currentQuickRepliesContainer = document.getElementById('chat-quick-replies');

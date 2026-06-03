@@ -86,8 +86,8 @@ async function fetchEvents() {
                 `;
             } else {
                 latestTrack.innerHTML = sortedByNewest.map(event => createEventCardHtml(event, false)).join('');
-                // Start marquee scrolling only AFTER rendering into DOM
-                setupMarqueeScroll('latest-events-track', 1);
+                // Dùng rAF để đảm bảo browser đã layout cards trước khi đo scrollWidth
+                requestAnimationFrame(() => setupMarqueeScroll('latest-events-track', 1));
             }
         }
 
@@ -105,8 +105,8 @@ async function fetchEvents() {
                 `;
             } else {
                 featuredTrack.innerHTML = featuredList.map(event => createEventCardHtml(event, false)).join('');
-                // Start marquee scrolling only AFTER rendering into DOM
-                setupMarqueeScroll('featured-events-track', 1.2);
+                // Dùng rAF để đảm bảo browser đã layout cards trước khi đo scrollWidth
+                requestAnimationFrame(() => setupMarqueeScroll('featured-events-track', 1.2));
             }
         }
 
@@ -493,37 +493,85 @@ function startHeroInterval() {
     }, 4000);
 }
 
-// --- CONTINUOUS HORIZONTAL MARQUEE AUTO-SCROLL (PAUSE ON HOVER) ---
-// FIX: TỐI ƯU UX - Tự động cuộn danh sách (Dừng khi hover chuột đã được xử lý bên dưới)
+// --- CONTINUOUS HORIZONTAL MARQUEE AUTO-SCROLL ---
 function setupMarqueeScroll(trackId, speed = 1) {
     const track = document.getElementById(trackId);
     if (!track) return;
 
-    let scrollInterval;
-    let isHovered = false;
+    // Huỷ animation cũ
+    if (track._marqueeAnimFrame) {
+        cancelAnimationFrame(track._marqueeAnimFrame);
+        track._marqueeAnimFrame = null;
+    }
 
-    const startScroll = () => {
-        clearInterval(scrollInterval);
-        scrollInterval = setInterval(() => {
-            if (isHovered) return;
-            track.scrollLeft += speed;
+    const originalCards = Array.from(track.children);
+    if (originalCards.length === 0) return;
 
-            // Loop scroll seamlessly
-            if (track.scrollLeft >= (track.scrollWidth - track.clientWidth - 4)) {
-                track.scrollLeft = 0;
+    if (!track.dataset.marqueeReady) {
+        // Đo scrollWidth trước khi clone
+        const oneSetWidth = track.scrollWidth;
+
+        // QUAN TRỌNG: nếu scrollWidth = 0 → browser chưa layout → thử lại sau
+        if (oneSetWidth <= 0) {
+            setTimeout(() => setupMarqueeScroll(trackId, speed), 100);
+            return;
+        }
+
+        track._marqueeOneSetWidth = oneSetWidth;
+
+        // Clone đúng 3 lần (luôn đủ cho mọi màn hình, không quá nhiều)
+        for (let c = 0; c < 3; c++) {
+            originalCards.forEach(card => {
+                const clone = card.cloneNode(true);
+                clone.setAttribute('aria-hidden', 'true');
+                // Đổi ID giá tiền để tránh trùng
+                const priceEl = clone.querySelector('[id^="card-price-"]');
+                if (priceEl) {
+                    const origId = priceEl.id;
+                    const newId = `${origId}-x${c}${Math.random().toString(36).substr(2, 3)}`;
+                    priceEl.id = newId;
+                    const m = origId.match(/card-price-(\d+)/);
+                    if (m) setTimeout(() => updateCardPrice(m[1], newId), 200 + c * 60);
+                }
+                track.appendChild(clone);
+            });
+        }
+
+        track.dataset.marqueeReady = 'true';
+        track._marqueePaused = false;
+        track.addEventListener('mouseenter', () => { track._marqueePaused = true; });
+        track.addEventListener('mouseleave', () => { track._marqueePaused = false; });
+    }
+
+    track.scrollLeft = 0;
+    track._marqueePaused = false;
+
+    let lastTimestamp = null;
+    // speed=1 → 80px/giây; speed=1.2 → 96px/giây
+    const pxPerSec = speed * 80;
+
+    const step = (timestamp) => {
+        if (!track._marqueePaused) {
+            if (lastTimestamp !== null) {
+                // Giới hạn delta tối đa 100ms (tránh nhảy khi đổi tab)
+                const delta = Math.min(timestamp - lastTimestamp, 100);
+                track.scrollLeft += (pxPerSec * delta) / 1000;
+
+                const oneSetWidth = track._marqueeOneSetWidth;
+                if (oneSetWidth > 0 && track.scrollLeft >= oneSetWidth) {
+                    track.scrollLeft -= oneSetWidth;
+                }
             }
-        }, 30);
+            lastTimestamp = timestamp;
+        } else {
+            lastTimestamp = null;
+        }
+        track._marqueeAnimFrame = requestAnimationFrame(step);
     };
 
-    track.addEventListener('mouseenter', () => {
-        isHovered = true;
-    });
-
-    track.addEventListener('mouseleave', () => {
-        isHovered = false;
-    });
-
-    startScroll();
+    setTimeout(() => {
+        track._marqueeAnimFrame = requestAnimationFrame(step);
+    }, 50);
 }
 
 // Manual scroll triggers
